@@ -29,7 +29,7 @@ private
 	alias core.stdc.stdio.stdout stdout;
 }
 
-class Terminal
+final class Terminal
 {
     private static Terminal instance_;
 
@@ -41,6 +41,11 @@ class Terminal
     private this ()
     {
         initTerminal();
+    }
+    
+    ~this ()
+    {
+        resetTerminal();
     }
     
 	Event getNextEvent ()
