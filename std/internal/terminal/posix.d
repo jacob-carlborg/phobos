@@ -27,15 +27,6 @@ private
 	alias core.stdc.stdio.stdin stdin;
 	alias core.stdc.stdio.fileno fileno;
 	alias core.stdc.stdio.stdout stdout;
-	
-	version (OSX)
-	{
-		enum
-		{
-			SIGSEGV = 11,
-			SIGWINCH = 28
-		}
-	}
 }
 
 class Terminal
