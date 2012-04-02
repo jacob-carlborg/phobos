@@ -13,14 +13,14 @@ struct Size
     int width;
     
     /// The height of the size.
-    int y;
+    int height;
 	 
     /**
      * Constructs a new Size with the given properties.
      * 
      * Params:
      *     width = the width of the size
-     *     height = the height coordinate of the size
+     *     height = the height of the size
      */
     this (int width, int height)
     {
