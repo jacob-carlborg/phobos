@@ -22,11 +22,22 @@ import std.cstream;
 import std.process;
 import std.stdio;
 
+import std.terminal.geometry.point;
+import std.terminal.geometry.rect;
+import std.terminal.geometry.size;
+
 private
 {
 	alias core.stdc.stdio.stdin stdin;
 	alias core.stdc.stdio.fileno fileno;
 	alias core.stdc.stdio.stdout stdout;
+}
+
+Terminal terminal;
+
+static this ()
+{
+    terminal = Terminal.instance();
 }
 
 final class Terminal
@@ -90,12 +101,12 @@ final class Terminal
 	
 	void moveCursor (Point position)
 	{
-		moveCursor(position.row, position.column);
+		moveCursor(position.y, position.x);
 	}
 	
-	void moveCursor (int column, int row)
+	void moveCursor (int x, int y)
 	{
-		writef(capaTable[Cursor.move], column, row);
+		writef(capaTable[Cursor.move], x, y);
 	}
 	
 	void changeScrollRegion (Point position)
@@ -248,7 +259,7 @@ final class Terminal
         
         foreach (i ; 0 .. length + 1)
         {
-            moveCursor(position.column, i);
+            moveCursor(position.x, i);
             vertical();
         }
         
@@ -256,17 +267,17 @@ final class Terminal
         moveCursor(currentPosition);
 	}
 	
-	void box (Rectangle rectangle)
+	void box (Rect rectangle)
 	{
 		auto currentPosition = getCursorPosition();
 		graphicsOn();
 		moveCursor(rectangle.position);
 		upperLeftCorner();
 		
-		int x1 = rectangle.position.column;
-		int y1 = rectangle.position.row;
-		int x2 = rectangle.position.column + rectangle.size.width;
-		int y2 = rectangle.position.row + rectangle.size.height;
+		int x1 = rectangle.position.x;
+		int y1 = rectangle.position.y;
+		int x2 = rectangle.position.x + rectangle.size.width;
+		int y2 = rectangle.position.y + rectangle.size.height;
 		
 		foreach (i ; x1 + 1 .. x2)
 		    horizontal();
@@ -304,8 +315,8 @@ final class Terminal
 	void table (Point position, int[] rows, int[] columns)
 	{
 		int r = 1;
-		auto x = position.column;
-		auto y = position.row;
+		auto x = position.x;
+		auto y = position.y;
 		auto currentPosition = getCursorPosition();
 
 		graphicsOn();
@@ -416,24 +427,6 @@ final class Terminal
 		writef(capaTable[CapaIndex.resizeWindow], rows, columns);
 		getWindowSize();
 	}
-}
-
-struct Point
-{
-	int column;
-	int row;
-}
-
-struct Rectangle
-{
-    Point position;
-    Size size;
-}
-
-struct Size
-{
-    int width;
-    int height;
 }
 
 struct Event

@@ -165,7 +165,8 @@ STD_MODULES = $(addprefix std/, algorithm array ascii base64 bigint		\
         typecons typetuple uni uri utf variant xml zip zlib)
 
 STD_NET_MODULES = $(addprefix std/net/, isemail curl)
-STD_TERMINAL_MODULES = $(addprefix std/terminal/geometry/, point rect size)
+STD_TERMINAL_MODULES = $(addprefix std/terminal/, cursor) \
+    $(addprefix std/terminal/geometry/, point rect size)
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
@@ -187,7 +188,7 @@ EXTRA_MODULES += $(EXTRA_DOCUMENTABLES) $(addprefix			\
 	std/internal/math/, biguintcore biguintnoasm biguintx86	\
 	gammafunction errorfunction) $(addprefix std/internal/, \
 	processinit uni uni_tab) $(addprefix std/internal/terminal/, \
-	posix)
+	posix terminal)
 
 # Aggregate all D modules relevant to this build
 D_MODULES = crc32 $(STD_MODULES) $(EXTRA_MODULES) $(STD_NET_MODULES) $(STD_TERMINAL_MODULES)
