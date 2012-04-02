@@ -54,7 +54,8 @@ DOCSRC = ../d-programming-language.org
 WEBSITE_DIR = ../web
 DOC_OUTPUT_DIR = $(WEBSITE_DIR)/phobos-prerelease
 BIGDOC_OUTPUT_DIR = /tmp
-SRC_DOCUMENTABLES = index.d $(addsuffix .d,$(STD_MODULES) $(STD_NET_MODULES) $(EXTRA_DOCUMENTABLES))
+SRC_DOCUMENTABLES = index.d $(addsuffix .d,$(STD_MODULES) $(STD_NET_MODULES) \
+    $(EXTRA_DOCUMENTABLES) $(STD_TERMINAL_MODULES))
 STDDOC = $(DOCSRC)/std.ddoc
 BIGSTDDOC = $(DOCSRC)/std_consolidated.ddoc
 DDOCFLAGS=-m$(MODEL) -d -c -o- -version=StdDdoc -I$(DRUNTIME_PATH)/import $(DMDEXTRAFLAGS)
@@ -164,6 +165,7 @@ STD_MODULES = $(addprefix std/, algorithm array ascii base64 bigint		\
         typecons typetuple uni uri utf variant xml zip zlib)
 
 STD_NET_MODULES = $(addprefix std/net/, isemail curl)
+STD_TERMINAL_MODULES = $(addprefix std/terminal/geometry/, point rect size)
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
@@ -188,12 +190,14 @@ EXTRA_MODULES += $(EXTRA_DOCUMENTABLES) $(addprefix			\
 	posix)
 
 # Aggregate all D modules relevant to this build
-D_MODULES = crc32 $(STD_MODULES) $(EXTRA_MODULES) $(STD_NET_MODULES)
+D_MODULES = crc32 $(STD_MODULES) $(EXTRA_MODULES) $(STD_NET_MODULES) $(STD_TERMINAL_MODULES)
+
 # Add the .d suffix to the module names
 D_FILES = $(addsuffix .d,$(D_MODULES))
 # Aggregate all D modules over all OSs (this is for the zip file)
 ALL_D_FILES = $(addsuffix .d, $(D_MODULES) \
-$(EXTRA_MODULES_LINUX) $(EXTRA_MODULES_OSX) $(EXTRA_MODULES_FREEBSD) $(EXTRA_MODULES_WIN32)) \
+$(EXTRA_MODULES_LINUX) $(EXTRA_MODULES_OSX) $(EXTRA_MODULES_FREEBSD) $(EXTRA_MODULES_WIN32) \
+    $(STD_TERMINAL_MODULES)) \
 	std/stdarg.d std/bind.d std/internal/windows/advapi32.d \
 	std/windows/registry.d std/c/linux/pthread.d std/c/linux/termios.d \
 	std/c/linux/tipc.d std/net/isemail.d std/net/curl.d
