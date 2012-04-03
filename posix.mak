@@ -157,7 +157,7 @@ MAIN = $(ROOT)/emptymain.d
 # Stuff in std/
 STD_MODULES = $(addprefix std/, algorithm array ascii base64 bigint		\
         bitmanip compiler complex concurrency container contracts conv	\
-        cpuid cstream ctype csv datetime demangle encoding exception	\
+        cpuid cstream ctype csv datetime demangle encoding event exception	\
         file format functional getopt json loader math mathspecial md5	\
         metastrings mmfile numeric outbuffer parallelism path perf		\
         process random range regex regexp signals socket socketstream	\
@@ -167,7 +167,8 @@ STD_MODULES = $(addprefix std/, algorithm array ascii base64 bigint		\
 STD_NET_MODULES = $(addprefix std/net/, isemail curl)
 STD_TERMINAL_MODULES = $(addprefix std/terminal/, cursor) \
     $(addprefix std/terminal/geometry/, point rect size) \
-    $(addprefix std/terminal/graphics/, color context)
+    $(addprefix std/terminal/graphics/, color context) \
+    $(addprefix std/terminal/widgets/, responder)
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
