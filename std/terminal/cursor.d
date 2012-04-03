@@ -7,7 +7,7 @@
  */
 module std.terminal.cursor;
 
-import std.internal.terminal.terminal;
+import std.internal.terminal.terminal : terminal;
 import std.terminal.geometry.point;
 
 final class Cursor
@@ -18,7 +18,7 @@ final class Cursor
     private this () {}
     
     /// Returns an instance of the receiver. 
-    static Cursor instance ()
+    @property static Cursor instance ()
     {
         return instance_ = instance_ ? instance_ : new Cursor;
     }

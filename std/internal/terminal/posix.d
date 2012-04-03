@@ -26,6 +26,8 @@ import std.terminal.geometry.point;
 import std.terminal.geometry.rect;
 import std.terminal.geometry.size;
 
+import std.terminal.graphics.color;
+
 private
 {
 	alias core.stdc.stdio.stdin stdin;
@@ -251,7 +253,7 @@ final class Terminal
 	    moveCursor(currentPosition);
 	}
 	
-	void verticalLine (Point position, int length)
+	void verticalLine (const ref Point position, int length)
 	{
         auto currentPosition = getCursorPosition();
         moveCursor(position);
@@ -267,7 +269,7 @@ final class Terminal
         moveCursor(currentPosition);
 	}
 	
-	void box (Rect rectangle)
+	void box (const ref Rect rectangle)
 	{
 		auto currentPosition = getCursorPosition();
 		graphicsOn();
@@ -312,7 +314,7 @@ final class Terminal
 		moveCursor(currentPosition);
 	}
 	
-	void table (Point position, int[] rows, int[] columns)
+	void table (const ref Point position, const int[] rows, const int[] columns)
 	{
 		int r = 1;
 		auto x = position.x;
@@ -433,11 +435,6 @@ struct Event
 {
 	Point position;
 	KeyCode key;
-}
-
-enum Color
-{
-	black, red, green, yellow, blue, magenta, cyan, white, defaultColor = 9
 }
 
 enum KeyCode

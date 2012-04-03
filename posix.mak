@@ -166,7 +166,8 @@ STD_MODULES = $(addprefix std/, algorithm array ascii base64 bigint		\
 
 STD_NET_MODULES = $(addprefix std/net/, isemail curl)
 STD_TERMINAL_MODULES = $(addprefix std/terminal/, cursor) \
-    $(addprefix std/terminal/geometry/, point rect size)
+    $(addprefix std/terminal/geometry/, point rect size) \
+    $(addprefix std/terminal/graphics/, color context)
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
