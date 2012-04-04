@@ -201,6 +201,9 @@ interface InputStream {
 
   char getc();
   wchar getcw(); /// ditto
+  
+  /// Reads and return the next character in the stream.
+  dchar readChar ();
 
   /***
    * Push a character back onto the stream.
@@ -664,6 +667,21 @@ class Stream : InputStream, OutputStream {
           throw new ReadException("not enough data in stream");
     }
     return c;
+  }
+  
+  /// Reads and return the next character in the stream.
+  dchar readChar ()
+  {
+      char[4] buffer;
+
+      buffer[0] = getc();
+      auto len = codeLength!(char)(buffer[0]);
+
+      foreach (i ; 1 .. len)
+          buffer[i] = getc();
+
+      size_t i;
+      return decode(buffer, i);
   }
 
   // pushes back character c into the stream; only has
