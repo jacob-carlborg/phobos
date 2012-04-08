@@ -43,7 +43,13 @@ Terminal terminal;
 
 static this ()
 {
+    initTerminal();
     terminal = Terminal.instance();
+}
+
+static ~this ()
+{
+    resetTerminal();
 }
 
 final class Terminal
@@ -53,16 +59,6 @@ final class Terminal
     static Terminal instance ()
     {
         return instance_ = instance_ ? instance_ : new Terminal;
-    }
-    
-    private this ()
-    {
-        initTerminal();
-    }
-    
-    ~this ()
-    {
-        resetTerminal();
     }
     
 	Event getNextEvent ()
@@ -236,12 +232,12 @@ final class Terminal
 	
 	void foregroundColor (Color color)
 	{
-		writef(capaTable[CapaIndex.foregroundColor]);
+		writef(capaTable[CapaIndex.foregroundColor], color);
 	}
 	
 	void backgroundColor (Color color)
 	{
-		writef(capaTable[CapaIndex.backgroundColor]);
+		writef(capaTable[CapaIndex.backgroundColor], color);
 	}
 	
 	void horizontalLine (Point position, int length)
