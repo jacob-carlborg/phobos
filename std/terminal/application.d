@@ -14,16 +14,9 @@ import Internal = std.internal.terminal.terminal;
 
 import std.terminal.widgets.control;
 import std.terminal.event;
+import std.terminal.widgets.menu;
 import std.terminal.widgets.responder;
 import std.terminal.widgets.terminal;
-
-
-class Menu : Control
-{
-    override void redraw () {}
-    void onResignedAsMainMenu (Event) {}
-    void onBecameMainMenu (Event) {}
-}
 
 class Application
 {

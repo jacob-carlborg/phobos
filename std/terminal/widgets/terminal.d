@@ -92,7 +92,7 @@ class Terminal : Composite
 	 * when the terminal is displayed for the first time.
 	 *
 	 * Params:
-     *     responder = the responder to set as the terminal's first responder.
+     *     responder = the responder to set as the terminal's first responder
 	 *
 	 * Returns: $(D_CODE true) when the operation is successful; otherwise, $(D_CODE false).
 	 */

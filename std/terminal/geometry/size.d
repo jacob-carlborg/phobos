@@ -27,4 +27,18 @@ struct Size
         this.width = width;
         this.height = height;
     }
+    
+    /**
+     * Overloads the += and -= operators. Increments or decrements the "width" and "height"
+     * fields with the given value.
+     * 
+     * Returns: the receiver
+     */
+    Size opOpAssign (string op) (int value) if (op == "+" || op == "-")
+    {
+        mixin("width " ~ op ~ "= value;");
+        mixin("height " ~ op ~ "= value;");
+        
+        return this;
+    }
 }

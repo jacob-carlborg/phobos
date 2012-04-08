@@ -27,4 +27,18 @@ struct Point
         this.x = x;
         this.y = y;
     }
+    
+    /**
+     * Overloads the += and -= operators. Increments or decrements the "x" and "y" fields
+     * with the given value.
+     * 
+     * Returns: the receiver
+     */
+    Point opOpAssign (string op) (int value) if (op == "+" || op == "-")
+    {
+        mixin("x " ~ op ~ "= value;");
+        mixin("y " ~ op ~ "= value;");
+        
+        return this;
+    }
 }
