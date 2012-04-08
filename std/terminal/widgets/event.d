@@ -7,7 +7,6 @@
  */
 module std.terminal.widgets.event;
 
-import std.event;
 import std.terminal.geometry.point;
 
 class Event
@@ -38,6 +37,9 @@ class Event
      * $(XREF terminal, widgets, event, EventType)
      */ 
 	EventType type;
+	
+	///
+	this () {}
 
 	/// Creates a new instance with the properties of the given event.
 	this (Event event)
@@ -82,39 +84,39 @@ class Event
 	/// Tests if the state mask of the receiver contains the given state.
 	bool stateMaskContains (uint state)
 	{
-	    return stateMask & state;
+	    return cast(bool) (stateMask & state);
 	}
 }
 
 enum EventType
 {
     /// The NULL event type (value is 0).
-	None = 0,
+	none = 0,
 
 	/// The key down event type (value is 1).
-	KeyDown = 1,
+	keyDown = 1,
 
 	/// The cursor move event type (value is 5).
-	CursorMove = 5,
+	cursorMove = 5,
 
 	/// The cursor enter event type (value is 6).
-	CursorEnter = 6,
+	cursorEnter = 6,
 
 	/// The cursor exit event type (value is 7).
-	CursorExit = 7,
+	cursorExit = 7,
 
 	/// The draw event type (value is 8).
-	Draw = 8,
+	draw = 8,
 
 	/**
 	 * The first key down event type. This is raised when the enter key is pressed
 	 * (value is 9).
 	 */
-	FirstKeyDown = 9,
+	firstKeyDown = 9,
 
 	/**
 	 * The second key down event type. This is raised when the space key is pressed
 	 * (value is 10).
 	 */
-	SecondKeyDown = 10
+	secondKeyDown = 10
 }
