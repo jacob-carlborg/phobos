@@ -41,4 +41,18 @@ struct Point
         
         return this;
     }
+    
+    /**
+     * Overloads the += and -= operators. Increments or decrements the "x" and "y" fields
+     * with the given value.
+     * 
+     * Returns: the receiver
+     */
+    Point opOpAssign (string op) (const ref Point value) if (op == "+" || op == "-")
+    {
+        mixin("x " ~ op ~ "= value.x;");
+        mixin("y " ~ op ~ "= value.y;");
+        
+        return this;
+    }
 }

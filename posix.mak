@@ -168,7 +168,7 @@ STD_NET_MODULES = $(addprefix std/net/, isemail curl)
 STD_TERMINAL_MODULES = $(addprefix std/terminal/, application cursor event) \
     $(addprefix std/terminal/geometry/, point rect size) \
     $(addprefix std/terminal/graphics/, color graphicscontext) \
-    $(addprefix std/terminal/widgets/, control menu responder terminal)
+    $(addprefix std/terminal/widgets/, composite control menu responder terminal)
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)

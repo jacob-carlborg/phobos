@@ -17,6 +17,7 @@ import std.terminal.event;
 class Composite : Control
 {
     alias Control.visible visible;
+    alias Control.bounds bounds;
     
 	/// The children controls this composite contains
 	protected Control[] children;
@@ -85,7 +86,7 @@ class Composite : Control
 	 */
 	Composite remove (Control control)
 	{
-	    remove!(e => e is control)(children);
+	    .remove!((Control e) { return e is control; })(children);
 	    return this;
 	}
 
@@ -141,14 +142,18 @@ class Composite : Control
 	 *
 	 * Returns: a list of all the controls that intersect with the given rectangle
 	 */
-	Control[] getIntersectingControls (const ref Rect rect) const
+	Control[] getIntersectingControls (const ref Rect rect)
 	{
 	    Control[] controls;
 	    controls.reserve(children.length);
 	    
 	    foreach (control ; children)
-	        if (rect.intersects(control.bounds) && !canFind!(e => e is control)(controls))
+	    {
+	        auto bounds = control.bounds;
+	        
+	        if (rect.intersects(bounds) && !canFind!((Control e) { return e is control;})(controls))
 	            controls ~= control;
+	    }
 	            
 	    return controls;
 	}
