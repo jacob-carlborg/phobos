@@ -19,8 +19,12 @@ import core.sys.posix.termios;
 import core.sys.posix.unistd;
 
 import std.cstream;
+import std.conv;
 import std.process;
 import std.stdio;
+import std.utf;
+
+import std.internal.terminal.terminal;
 
 import std.terminal.geometry.point;
 import std.terminal.geometry.rect;
@@ -396,17 +400,17 @@ final class Terminal
 		moveCursor(currentPosition);
 	}
 	
-	int width ()
+	@property int width ()
 	{
 		return columns;
 	}
 	
- 	int height ()
+ 	@property int height ()
 	{
 		return rows;
 	}
 	
-	bool changed ()
+	@property bool changed ()
 	{
 		bool result = sizeChanged;
 		sizeChanged = false;
@@ -429,28 +433,6 @@ final class Terminal
 		writef(capaTable[CapaIndex.resizeWindow], rows, columns);
 		getWindowSize();
 	}
-}
-
-struct Event
-{
-	Point position;
-	KeyCode key;
-}
-
-enum KeyCode
-{
-	null_, ctrlSpace = 0, ctrlA, ctrlB, ctrlC, ctrlD, ctrlE, ctrlF, ctrlG,
-	bell = 7, ctrlH, backspace = 8, ctrlI, tab = 9, ctrlJ, newline = 10, ctrlK,
-	ctrlL, ctrlM, return_ = 13, enter = 13, ctrlN, ctrlO, ctrlP, ctrlQ, ctrlR,
-	ctrlS, ctrlT, ctrlU, ctrlV, ctrlW, ctrlX, ctrlY, ctrlZ, escape, del = 127,
-	rubout = 127,
-	
-	f1 = 256, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,
-    help, execute, f17, f18, f19, f20, home, insert, delete_, end,
-    pageUp, pageDown, up, down, left, right, pf1, pf2, pf3, pf4,
-    nkpMultiple, nkpPlus, nkpDivide, nkp0, nkp1, nkp2, nkp3, nkp4,
-    nkp5, nkp6, nkp7, nkp8, nkp9, nkpMinus, nkpComma, nkpPeriod,
-    nkpEnter
 }
 
 private:
@@ -846,22 +828,22 @@ unittest
 
 size_t readKey ()
 {
-    auto c = din.getc();
+    auto c = din.readChar();
 
     if (c != '\033')
-     return c;
+        return c;
     
     string buffer;
     buffer.reserve(512);
-    
+
     size_t result;
-    
+
     do
     {
-     buffer ~= din.getc();
-     result = functionKeyCode(buffer);
+        buffer ~= din.readChar();
+        result = functionKeyCode(buffer);
     } while (!result);
-    
+
     return result;
 }
 
