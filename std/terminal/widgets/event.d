@@ -18,7 +18,7 @@ class Event
 	void* data;
 
 	/// Depending on the event, the character represented by the key that was typed.
-	char character;
+	dchar character;
 
 	/**
 	 * Depending on the event, the state of the keyboard modifier keys at the time the event
