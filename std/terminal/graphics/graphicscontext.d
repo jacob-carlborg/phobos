@@ -3,9 +3,9 @@
  * Authors: Jacob Carlborg
  * Version: Initial created: Oct 22, 2009
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
- * Source: $(PHOBOSSRC std/terminal/geometry/_context.d)
+ * Source: $(PHOBOSSRC std/terminal/geometry/_graphicscontext.d)
  */
-module std.terminal.graphics.context;
+module std.terminal.graphics.graphicscontext;
 
 import std.stdio;
 import std.internal.terminal.terminal : terminal;
@@ -14,7 +14,7 @@ import std.terminal.geometry.point;
 import std.terminal.geometry.rect;
 import std.terminal.graphics.color;
 
-final class Context
+final class GraphicsContext
 {
     /// Gets/sets the foreground color.
     Color foreground;
@@ -31,14 +31,14 @@ final class Context
 	/// Enables/disables underline text style.
 	bool underline;
 
-    private static Context instance_;
+    private static GraphicsContext instance_;
 	
 	private this () {}
 	
     /// Returns an instance of the receiver. 
-    static Context instance ()
+    @property static GraphicsContext instance ()
     {
-        return instance_ = instance_ ? instance_ : new Context;
+        return instance_ = instance_ ? instance_ : new GraphicsContext;
     }
     
     /// Clears the screen.
