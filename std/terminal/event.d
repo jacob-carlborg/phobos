@@ -3,9 +3,9 @@
  * Authors: Jacob Carlborg
  * Version: Initial created: Oct 6, 2009
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
- * Source: $(PHOBOSSRC std/terminal/widgets/_event.d)
+ * Source: $(PHOBOSSRC std/terminal/_event.d)
  */
-module std.terminal.widgets.event;
+module std.terminal.event;
 
 import std.terminal.geometry.point;
 

@@ -13,7 +13,7 @@ import std.uni;
 import Internal = std.internal.terminal.terminal;
 
 import std.terminal.widgets.control;
-import std.terminal.widgets.event;
+import std.terminal.event;
 import std.terminal.widgets.responder;
 import std.terminal.widgets.terminal;
 

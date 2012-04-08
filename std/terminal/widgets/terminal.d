@@ -14,7 +14,7 @@ import std.terminal.geometry.rect;
 import std.terminal.widgets.control;
 import std.terminal.widgets.responder;
 import std.terminal.widgets.composite;
-import std.terminal.widgets.event;
+import std.terminal.event;
 import std.terminal.cursor;
 import std.terminal.graphics.graphicscontext;
 import std.terminal.application;

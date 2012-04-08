@@ -8,7 +8,7 @@
 module std.terminal.widgets.responder;
 
 import std.event;
-import std.terminal.widgets.event;
+import std.terminal.event;
 
 class Responder
 {

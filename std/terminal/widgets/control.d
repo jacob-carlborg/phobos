@@ -19,7 +19,7 @@ import std.terminal.geometry.size;
 import std.terminal.graphics.color;
 import std.terminal.graphics.graphicscontext;
 
-import std.terminal.widgets.event;
+import std.terminal.event;
 import std.terminal.widgets.responder;
 import std.terminal.widgets.terminal;
 

@@ -12,7 +12,7 @@ import std.algorithm;
 import std.terminal.widgets.control;
 import std.terminal.geometry.rect;
 import std.terminal.geometry.point;
-import std.terminal.widgets.event;
+import std.terminal.event;
 
 class Composite : Control
 {
