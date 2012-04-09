@@ -44,7 +44,7 @@ import std.traits;
 struct event (Sender, Event)
 {
     /// An alias of the delegate signature.
-    alias void delegate(const Sender, const Event) EventHandler;
+    alias void delegate (const Sender, const Event) EventHandler;
     
     private EventHandler[] eventHandlers;
     
@@ -81,7 +81,7 @@ struct event (Sender, Event)
 	 *
 	 * See_Also: $(LREF add)
 	 */	
-	void opBinary (string op) (EventHandler eventHandler) if (op == "~=")
+	void opOpAssign (string op) (EventHandler eventHandler) if (op == "~")
 	{
 	    add(eventHandler);
 	}
@@ -94,7 +94,7 @@ struct event (Sender, Event)
 	 *
 	 * See_Also: $(LREF remove)
 	 */
-	void opBinary (string op) (EventHandler eventHandler) if (op == "-=")
+	void opOpAssign (string op) (EventHandler eventHandler) if (op == "-")
 	{
 		remove(eventHandler);
 	}

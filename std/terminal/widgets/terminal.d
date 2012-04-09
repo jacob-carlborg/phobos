@@ -190,7 +190,7 @@ class Terminal : Composite
 	    }
 	}
 
-	protected override void onDraw (Control control, Event event) const
+	protected override void onDraw (const Control control, const Event event) const
 	{
 	    if (!visible)
 	    {

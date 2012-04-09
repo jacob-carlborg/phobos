@@ -39,8 +39,11 @@ class Menu : Composite
 	
     private int widest;
     
+    /// Creates a new instance of the receiver.
 	this ()
 	{
+	    super();
+	
 		autoSize_ = true;
 		visible = false;
 		hasInvertedColors_ = true;

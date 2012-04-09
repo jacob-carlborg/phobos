@@ -42,6 +42,12 @@ class Responder
     /// Storage for the enabled property.
     protected bool enabled_;
     
+    /// Creates a new instance of the receiver.
+    this ()
+    {
+       enabled = true; 
+    }
+    
     /**
 	 * If true, the receiver accepts first responder status. Override this method in
 	 * subclasses to return true if the receiver accepts first responder status.

@@ -167,7 +167,7 @@ class Composite : Control
 	    return false;
 	}
 
-	protected override void onDraw (Control control, Event event) const
+	protected override void onDraw (const Control control, const Event event) const
 	{
 	    super.onDraw(control, event);
 	    

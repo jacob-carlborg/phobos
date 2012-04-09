@@ -63,6 +63,21 @@ class Control : Responder
 	
 	/// The draw event. This event is raised when the receiver needs to be redrawn.
 	event!(Control, Event) draw;
+	
+	/// Creates a new instance of the receiver.
+	this ()
+	{
+	    super();
+
+	    backgroundColor = Color.defaultColor;
+	    foregroundColor = Color.defaultColor;
+	    alignment = TextAlignment.center;
+	    margins = Size(3, 0);
+	    bounds = Rect(0, 0, 0, 0);
+	    visible = true;
+	    
+	    draw ~= &this.onDraw;
+	}
 
     /// Gets/sets the background color.
     @property Color backgroundColor () const
@@ -252,7 +267,7 @@ class Control : Responder
 	 * Params:
      *     event = the event information
 	 */
-	protected void onDraw (Control control, Event event) const
+	protected void onDraw (const Control control, const Event event) const
     {
         auto gc = GraphicsContext.instance;
         auto bounds = this.bounds;
