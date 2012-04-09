@@ -122,8 +122,8 @@ struct event (Sender, Event)
 	 */
 	void opCall (const Sender sender, const Event event) const
 	{
-        // foreach (e ; eventHandlers)
-        //  e(sender, event);
+        foreach (e ; eventHandlers)
+            e(sender, event);
 	}
 
 	/**

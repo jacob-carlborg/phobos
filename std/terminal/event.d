@@ -42,9 +42,9 @@ class Event
 	this () {}
 
 	/// Creates a new instance with the properties of the given event.
-	this (Event event)
+	this (const Event event)
 	{
-	    data = event.data;
+	    //data = event.data;
 	    character = event.character;
 	    stateMask = event.stateMask;
 	    keyCode = event.keyCode;
@@ -76,9 +76,17 @@ class Event
 	}
 
 	/// Clones the receiver and returns a new instance.
-	Event clone ()
+	Event clone () const
 	{
-	    return new Event(this);
+	    auto e = new Event;
+
+	    //e.data = cast(void*) data;
+        e.character = character;
+        e.stateMask = stateMask;
+        e.keyCode = keyCode;
+        e.type = type;
+
+        return e;
 	}
 
 	/// Tests if the state mask of the receiver contains the given state.

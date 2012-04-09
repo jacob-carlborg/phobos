@@ -120,16 +120,17 @@ class Composite : Control
 	override bool hitTest (const ref Point point, out Control control)
 	{
 	    bool contains = bounds.contains(point) && acceptsFirstResponder && enabled;
-	    
+
 	    if (contains)
 	    {
-	        control = this;
-	        
 	        foreach (child ; children)
 	            if (child.hitTest(point, control))
 	                break;
+
+	        if (!control)
+	            control = this;
 	    }
-	    
+
 	    return contains;
 	}
 

@@ -305,7 +305,7 @@ class Control : Responder
 	 * Params:
      *     event = the event information
 	 */
-	public void onCursorMoved (Event event)
+	override void onCursorMoved (const Event event)
 	{
 	    if (!enabled)
 	        return;

@@ -151,22 +151,22 @@ class Terminal : Composite
 	{
 	    switch (event.type)
 	    {
-	        case EventType.cursorMove:
-	        {
-	            if (responder.acceptsCursorMovedEvents &&
-	                responder.acceptsFirstResponder &&
-	                makeFirstResponder(responder))
-	                    responder.onCursorMoved(event);
-	            
-	            else if (responder.enabled && firstResponder.acceptsCursorMovedEvents)
-	                firstResponder.onCursorMoved(event);
-	            
-	            else
-	                // let the terminal handle the cursor moved events even if it is not the
-	                // first responder
-	                onCursorMoved(event);
-	        }
-	        break;
+            case EventType.cursorMove:
+            {
+                if (responder.acceptsCursorMovedEvents &&
+                    responder.acceptsFirstResponder &&
+                    makeFirstResponder(responder))
+                        responder.onCursorMoved(event);
+                
+                else if (responder.enabled && firstResponder.acceptsCursorMovedEvents)
+                    firstResponder.onCursorMoved(event);
+                
+                else
+                    // let the terminal handle the cursor moved events even if it is not the
+                    // first responder
+                    onCursorMoved(event);
+            }
+            break;
 	        
 	        case EventType.cursorEnter:
 	            if (responder.acceptsFirstResponder && makeFirstResponder(responder))

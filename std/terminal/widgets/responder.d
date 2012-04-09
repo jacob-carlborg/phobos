@@ -129,7 +129,7 @@ class Responder
 	 * Params:
      *     event = the event information
 	 */
-	void onCursorMoved (const Event event) const
+	void onCursorMoved (const Event event)
 	{
 	    if (enabled && acceptsCursorMovedEvents)
 	        cursorMoved(this, event);
