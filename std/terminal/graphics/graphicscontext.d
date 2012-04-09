@@ -16,30 +16,130 @@ import std.terminal.graphics.color;
 
 final class GraphicsContext
 {
-    /// Gets/sets the foreground color.
-    Color foreground;
-    
-    /// Gets/sets the background color.
-    Color background; 
-    
-    /// Enables/disables bold text style.
-    bool bold;
-    
-    /// Enables/disables inverted colors.
-    bool invertColors;
-
-	/// Enables/disables underline text style.
-	bool underline;
-
-    private static GraphicsContext instance_;
+    private
+    {
+        static GraphicsContext instance_;
+        
+        Color foreground_;
+        Color background_;
+        
+        bool bold_;
+        bool invertColors_;
+        bool underline_;
+    }
 	
 	private this () {}
 	
-    /// Returns an instance of the receiver. 
+    /// Returns an instance of the receiver.
     @property static GraphicsContext instance ()
     {
         return instance_ = instance_ ? instance_ : new GraphicsContext;
     }
+
+	/// Gets/sets the foreground color.
+    @property Color foreground ()
+    {
+        return foreground_;
+    }
+    
+    /// Ditto
+    @property Color foreground (Color color)
+    {
+        terminal.foregroundColor(color);
+        return foreground_ = color;
+    }
+    
+    /// Gets/sets the background color.
+    @property Color background ()
+    {
+        return background_;
+    }
+    
+    /// Ditto
+    @property Color background (Color color)
+    {
+        terminal.backgroundColor(color);
+        return background_ = color;
+    }
+    
+    /// Enables/disables bold text style.
+    @property bool bold ()
+    {
+        return bold_;
+    }
+    
+    /// Ditto
+    @property bool bold (bool bold)
+    {
+        if (bold)
+            terminal.bold();
+        
+        else
+        {
+            terminal.normal();
+            
+            if (invertColors)
+                terminal.reverse();
+            
+            if (underline)
+                terminal.underline();
+        }
+        
+        return bold_ = bold;
+    }
+    
+    /// Enables/disables inverted colors.
+    @property bool invertColors ()
+    {
+        return invertColors_;
+    }
+    
+    /// Ditto
+    @property bool invertColors (bool invertColors)
+    {
+        if (invertColors)
+            terminal.reverse();
+        
+        else
+        {
+            terminal.normal();
+            
+            if (bold)
+                terminal.bold();
+                
+            if (underline)
+                terminal.underline();
+
+        }
+        
+        return invertColors_ = invertColors;
+    }
+
+	/// Enables/disables underline text style.
+	@property bool underline ()
+	{
+	    return underline_;
+	}
+	
+	/// Ditto
+	@property bool underline (bool underline)
+	{
+	    if (underline)
+	        terminal.underline();
+	        
+	    else
+	    {
+	        terminal.normal();
+	        
+	        if (bold)
+	            terminal.bold();
+	        
+	        if (invertColors)
+	            terminal.reverse();
+	    }
+	    
+	    return underline_ = underline;
+	}
     
     /// Clears the screen.
 	void clearScreen () const
