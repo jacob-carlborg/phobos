@@ -66,7 +66,9 @@ DOCSRC = ../dlang.org
 WEBSITE_DIR = ../web
 DOC_OUTPUT_DIR = $(WEBSITE_DIR)/phobos-prerelease
 BIGDOC_OUTPUT_DIR = /tmp
-SRC_DOCUMENTABLES = index.d $(addsuffix .d,$(STD_MODULES) $(STD_NET_MODULES) $(STD_DIGEST_MODULES) $(EXTRA_DOCUMENTABLES))
+SRC_DOCUMENTABLES = index.d $(addsuffix .d,$(STD_MODULES) $(STD_NET_MODULES) \
+	$(STD_DIGEST_MODULES) $(STD_SERIALIZATION_MODULES) \
+	$(STD_SERIALIZATION_ARCHIVES_MODULES) $(EXTRA_DOCUMENTABLES))
 STDDOC = $(DOCSRC)/std.ddoc
 BIGSTDDOC = $(DOCSRC)/std_consolidated.ddoc
 DDOCFLAGS=$(MODEL_FLAG) -w -d -c -o- -version=StdDdoc -I$(DRUNTIME_PATH)/import $(DMDEXTRAFLAGS)
@@ -160,7 +162,7 @@ endif
 MAIN = $(ROOT)/emptymain.d
 
 # Stuff in std/
-STD_MODULES = $(addprefix std/, algorithm array ascii base64 bigint		\
+STD_MODULES = $(addprefix std/, algorithm array ascii attribute base64 bigint \
         bitmanip compiler complex concurrency container conv		\
         cstream csv datetime demangle encoding exception	\
         file format functional getopt json math mathspecial md5	\
@@ -172,6 +174,12 @@ STD_MODULES = $(addprefix std/, algorithm array ascii base64 bigint		\
 STD_NET_MODULES = $(addprefix std/net/, isemail curl)
 
 STD_DIGEST_MODULES = $(addprefix std/digest/, digest crc md ripemd sha)
+
+STD_SERIALIZATION_MODULES = $(addprefix std/serialization/, events registerwrapper \
+		serializable serializationexception serializer)
+
+STD_SERIALIZATION_ARCHIVES_MODULES = $(addprefix std/serialization/archives/, \
+		archive xmlarchive)
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
@@ -196,7 +204,9 @@ EXTRA_MODULES += $(EXTRA_DOCUMENTABLES) $(addprefix			\
 	processinit uni uni_tab unicode_tables)
 
 # Aggregate all D modules relevant to this build
-D_MODULES = crc32 $(STD_MODULES) $(EXTRA_MODULES) $(STD_NET_MODULES) $(STD_DIGEST_MODULES)
+D_MODULES = crc32 $(STD_MODULES) $(EXTRA_MODULES) $(STD_NET_MODULES) \
+	$(STD_DIGEST_MODULES) $(STD_SERIALIZATION_MODULES) \
+	$(STD_SERIALIZATION_ARCHIVES_MODULES)
 # Add the .d suffix to the module names
 D_FILES = $(addsuffix .d,$(D_MODULES))
 # Aggregate all D modules over all OSs (this is for the zip file)
