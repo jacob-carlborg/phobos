@@ -6,19 +6,20 @@
  */
 module std.serialization.serializer;
 
-import std.conv;
+import std.algorithm : canFind;
 import std.array;
-
-import orange.core.Attribute;
-import orange.serialization._;
+import std.conv;
+import std.exception;
 import std.serialization.archives.archive;
-import orange.util._;
-import orange.util.collection.Array;
+import std.serialization.attribute;
+import std.serialization.events;
+import std.serialization.registerwrapper;
+import std.serialization.serializable;
+import std.serialization.serializationexception;
+import std.traits;
 
 private
 {
-	alias orange.util.CTFE.contains ctfeContains;
-
 	enum Mode
 	{
 		serializing,
@@ -111,7 +112,7 @@ class Serializer
 	 * };
 	 * ---
 	 */
-	ErrorCallback errorCallback ()
+	@property ErrorCallback errorCallback ()
 	{
 		return archive.errorCallback;
 	}
@@ -130,7 +131,7 @@ class Serializer
 	 * };
 	 * ---
 	 */
-	ErrorCallback errorCallback (ErrorCallback errorCallback)
+	@property ErrorCallback errorCallback (ErrorCallback errorCallback)
 	{
 		return archive.errorCallback = errorCallback;
 	}
@@ -554,7 +555,7 @@ class Serializer
 	}
 
 	/// Returns the receivers archive
-	Archive archive ()
+	@property Archive archive ()
 	{
 		return archive_;
 	}
@@ -629,7 +630,7 @@ class Serializer
 		hasBegunSerializing = false;
 		hasBegunDeserializing = false;
 
-		archive.reset;
+		archive.reset();
 
 		mode = Mode.init;
 	}
@@ -720,7 +721,7 @@ class Serializer
 		else static if (isStruct!(T))
 			serializeStruct(value, key, id);
 
-		else static if (isString!(T))
+		else static if (isSomeString!(T))
 			serializeString(value, key, id);
 
 		else static if (isArray!(T))
@@ -864,8 +865,8 @@ class Serializer
 
 		addSerializedReference(value, id);
 
-		string keyType = typeid(KeyTypeOfAssociativeArray!(T)).toString;
-		string valueType = typeid(ValueTypeOfAssociativeArray!(T)).toString;
+		string keyType = typeid(KeyType!(T)).toString;
+		string valueType = typeid(ValueType!(T)).toString;
 
 		archive.archiveAssociativeArray(keyType, valueType, value.length, key, id, {
 			size_t i;
@@ -907,7 +908,7 @@ class Serializer
 
 			else
 			{
-				static if (isVoid!(BaseTypeOfPointer!(T)))
+				static if (isVoid!(PointerTarget!(T)))
 					error(`The value with the key "` ~ to!(string)(key) ~ `"` ~
 						format!(` of the type "`, T, `" cannot be serialized on `,
 						`its own, either implement std.serialization.serializable`,
@@ -946,7 +947,7 @@ class Serializer
 	private void serializeTypedef (T) (T value, string key, Id id)
 	{
 		archive.archiveTypedef(typeid(T).toString, key, nextId, {
-			serializeInternal!(BaseTypeOfTypedef!(T))(value, nextKey);
+			serializeInternal!(OriginalType!(T))(value, nextKey);
 		});
 	}
 
@@ -992,7 +993,6 @@ class Serializer
 
 		archive.beginUnarchiving(data);
 		auto value = deserializeInternal!(T)(key);
-		deserializingPostProcess;
 
 		return value;
 	}
@@ -1120,7 +1120,7 @@ class Serializer
 		else static if (isStruct!(T))
 			return deserializeStruct!(T)(keyOrId);
 
-		else static if (isString!(T))
+		else static if (isSomeString!(T))
 			return deserializeString!(T)(keyOrId);
 
 		else static if (isArray!(T))
@@ -1173,7 +1173,7 @@ class Serializer
 					auto runtimeType = value.classinfo.name;
 					auto runHelper = false;
 
-					static if (isString!(Key))
+					static if (isSomeString!(Key))
 					{
 						if (auto deserializer = runtimeType in overriddenDeserializers)
 							callSerializer(deserializer, value, keyOrId);
@@ -1230,7 +1230,7 @@ class Serializer
 					auto type = toData(typeid(T).toString);
 					auto runHelper = false;
 
-					static if (isString!(U))
+					static if (isSomeString!(U))
 					{
 						if (auto deserializer = type in overriddenDeserializers)
 							callSerializer(deserializer, value, key);
@@ -1348,8 +1348,8 @@ class Serializer
 		if (auto reference = getDeserializedReference!(T)(id))
 			return *reference;
 
-		alias KeyTypeOfAssociativeArray!(T) Key;
-		alias ValueTypeOfAssociativeArray!(T) Value;
+		alias KeyType!(T) Key;
+		alias ValueType!(T) Value;
 
 		alias Unqual!(Key) UKey;
 		alias Unqual!(Value) UValue;
@@ -1388,7 +1388,7 @@ class Serializer
 		if (auto reference = getDeserializedReference!(T)(pointeeId))
 			return Pointer!(T)(*reference, Id.max);
 
-		alias BaseTypeOfPointer!(T) BaseType;
+		alias PointerTarget!(T) BaseType;
 		alias Unqual!(BaseType) UnqualfiedBaseType;
 
 		auto pointer = new UnqualfiedBaseType;
@@ -1405,7 +1405,7 @@ class Serializer
 
 			else
 			{
-				static if (isVoid!(BaseTypeOfPointer!(T)))
+				static if (isVoid!(PointerTarget!(T)))
 					error(`The value with the key "` ~ to!(string)(key) ~ `"` ~
 						format!(` of the type "`, T, `" cannot be deserialized on `
 						`its own, either implement std.serialization.serializable`
@@ -1449,7 +1449,7 @@ class Serializer
 		T value;
 
 		archive.unarchiveTypedef!(T)(key, {
-			value = cast(T) deserializeInternal!(BaseTypeOfTypedef!(T))(nextKey);
+			value = cast(T) deserializeInternal!(OriginalType!(T))(nextKey);
 		});
 
 		return value;
@@ -1477,8 +1477,8 @@ class Serializer
 			mixin(`alias getAttributes!(value.` ~ field ~ `) attributes;`);
 
 			static if (attributes.contains!(nonSerialized) ||
-				ctfeContains!(string)(internalFields, field) ||
-				ctfeContains!(string)(nonSerializedFields, field))
+				internalFields.canFind(field) ||
+				nonSerializedFields.canFind(field))
 			{
 				continue;
 			}
@@ -1536,8 +1536,8 @@ class Serializer
 			mixin(`alias getAttributes!(value.` ~ field ~ `) attributes;`);
 
 			static if (attributes.contains!(nonSerialized) ||
-				ctfeContains!(string)(internalFields, field) ||
-				ctfeContains!(string)(nonSerializedFields, field))
+				internalFields.canFind(field) ||
+				nonSerializedFields.canFind(field))
 			{
 				continue;
 			}
@@ -1589,7 +1589,7 @@ class Serializer
 
 	private void serializeBaseTypes (T : Object) (inout T value)
 	{
-		alias BaseTypeTupleOf!(T)[0] Base;
+		alias BaseTypeTuple!(T)[0] Base;
 
 		static if (!is(Unqual!(Base) == Object))
 		{
@@ -1601,7 +1601,7 @@ class Serializer
 
 	private void deserializeBaseTypes (T : Object) (T value)
 	{
-		alias BaseTypeTupleOf!(T)[0] Base;
+		alias BaseTypeTuple!(T)[0] Base;
 
 		static if (!is(Unqual!(Base) == Object))
 		{
@@ -1628,7 +1628,7 @@ class Serializer
 
 	private void addDeserializedSlice (T) (T value, Id id)
 	{
-		static assert(isArray!(T) || isString!(T), format!(`The given type "`, T, `" is not a slice type, i.e. array or string.`));
+		static assert(isArray!(T) || isSomeString!(T), format!(`The given type "`, T, `" is not a slice type, i.e. array or string.`));
 
 		deserializedSlices[id] = cast(void[]) value;
 	}
@@ -1774,20 +1774,6 @@ class Serializer
 		}
 	}
 
-	private void deserializingPostProcess ()
-	{
-		deserializingPostProcessPointers;
-	}
-
-	private void deserializingPostProcessPointers ()
-	{
-		// foreach (pointeeId, pointee ; deserializedValues)
-		// {
-		// 	if (auto pointer = pointeeId in deserializedPointers)
-		// 		**pointer = pointee;
-		// }
-	}
-
 	private string arrayToString (T) ()
 	{
 		return typeid(ElementTypeOfArray!(T)).toString;
@@ -1879,7 +1865,7 @@ class Serializer
 	{
 		enum nonSerializedFields = collectAnnotations!(T);
 
-		return ctfeContains(nonSerializedFields, "this") || getAttributes!(T).contains!(nonSerialized);
+		return nonSerializedFields.canFind("this") || getAttributes!(T).contains!(nonSerialized);
 	}
 
 	private static template hasAnnotation (T, string annotation)
@@ -1959,4 +1945,234 @@ struct Slice
 
 	/// The id of the slice. (Only used during unarchiving).
 	size_t id = size_t.max;
+}
+
+private:
+
+// Evaluates to true if $(D_PARAM T) is a primitive type.
+template isPrimitive (T)
+{
+	enum bool isPrimitive = is(T == bool) ||
+						is(T == byte) ||
+						is(T == cdouble) ||
+						//is(T == cent) ||
+						is(T == cfloat) ||
+						is(T == char) ||
+						is(T == creal) ||
+						is(T == dchar) ||
+						is(T == double) ||
+						is(T == float) ||
+						is(T == idouble) ||
+						is(T == ifloat) ||
+						is(T == int) ||
+						is(T == ireal) ||
+						is(T == long) ||
+						is(T == real) ||
+						is(T == short) ||
+						is(T == ubyte) ||
+						//is(T == ucent) ||
+						is(T == uint) ||
+						is(T == ulong) ||
+						is(T == ushort) ||
+						is(T == wchar);
+}
+
+// Evaluates to true if $(D_PARAM T) is class.
+template isClass (T)
+{
+	enum bool isClass = is(T == class);
+}
+
+// Evaluates to true if $(D_PARAM T) is an interface.
+template isInterface (T)
+{
+	enum bool isInterface = is(T == interface);
+}
+
+// Evaluates to true if $(D_PARAM T) is a class or an interface.
+template isObject (T)
+{
+	enum bool isObject = isClass!(T) || isInterface!(T);
+}
+
+// Evaluates to true if $(D_PARAM T) is an object or a pointer.
+template isReference (T)
+{
+	enum bool isReference = isObject!(T) || isPointer!(T);
+}
+
+// Evaluates to true if $(D_PARAM T) is an enum.
+template isEnum (T)
+{
+	enum bool isEnum = is(T == enum);
+}
+
+// Evaluates to true if $(D_PARAM T) is a typedef.
+template isTypedef (T)
+{
+	enum bool isTypedef = is(T == typedef);
+}
+
+// Evaluates to true if $(D_PARAM T) is void.
+template isVoid (T)
+{
+	enum bool isVoid = is(T == void);
+}
+
+// Evaluates to true if $(D_PARAM T) is a struct.
+template isStruct (T)
+{
+    enum isStruct = is(T == struct);
+}
+
+inout(T)[] assumeUnique (T) (ref T[] source, ref inout(T)[] destination)
+{
+	destination = cast(inout(T)[]) source;
+	source = null;
+
+	return destination;
+}
+
+/*
+ * Evaluates to true if T has a field with the given name
+ *
+ * Params:
+ * 		T = the type of the class/struct
+ * 		field = the name of the field
+ */
+template hasField (T, string field)
+{
+	enum hasField = hasFieldImpl!(T, field, 0);
+}
+
+private template hasFieldImpl (T, string field, size_t i)
+{
+	static if (T.tupleof.length == i)
+		enum hasFieldImpl = false;
+
+	else static if (T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $] == field)
+		enum hasFieldImpl = true;
+
+	else
+		enum hasFieldImpl = hasFieldImpl!(T, field, i + 1);
+}
+
+// Evaluates to an array of strings containing the names of the fields in the given type
+template fieldsOf (T)
+{
+	enum fieldsOf = fieldsOfImpl!(T, 0);
+}
+
+/*
+ * Implementation for fieldsOf
+ *
+ * Returns: an array of strings containing the names of the fields in the given type
+ */
+template fieldsOfImpl (T, size_t i)
+{
+	static if (T.tupleof.length == 0)
+		enum fieldsOfImpl = [""];
+
+	else static if (T.tupleof.length - 1 == i)
+		enum fieldsOfImpl = [T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $]];
+
+	else
+		enum fieldsOfImpl = T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $] ~ fieldsOfImpl!(T, i + 1);
+}
+
+/*
+ * Evaluates to the type of the field with the given name
+ *
+ * Params:
+ * 		T = the type of the class/struct
+ * 		field = the name of the field
+ */
+template TypeOfField (T, string field)
+{
+	static assert(hasField!(T, field), "The given field \"" ~ field ~ "\" doesn't exist in the type \"" ~ T.stringof ~ "\"");
+
+	alias TypeOfFieldImpl!(T, field, 0) TypeOfField;
+}
+
+private template TypeOfFieldImpl (T, string field, size_t i)
+{
+	static if (T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $] == field)
+		alias typeof(T.tupleof[i]) TypeOfFieldImpl;
+
+	else
+		alias TypeOfFieldImpl!(T, field, i + 1) TypeOfFieldImpl;
+}
+
+/*
+ * Evaluates to a string containing the name of the field at given position in the given type.
+ *
+ * Params:
+ * 		T = the type of the class/struct
+ * 		position = the position of the field in the tupleof array
+ */
+template nameOfFieldAt (T, size_t position)
+{
+    static assert (position < T.tupleof.length, format!(`The given position "`, position, `" is greater than the number of fields (`, T.tupleof.length, `) in the type "`, T, `"`));
+
+	static if (T.tupleof[position].stringof.length > T.stringof.length + 3)
+		enum nameOfFieldAt = T.tupleof[position].stringof[1 + T.stringof.length + 2 .. $];
+
+	else
+		enum nameOfFieldAt = "";
+}
+
+/*
+ * Sets the given value to the filed with the given name
+ *
+ * Params:
+ *     t = an instance of the type that has the field
+ *     value = the value to set
+ */
+void setValueOfField (T, U, string field) (ref T t, U value)
+in
+{
+	static assert(hasField!(T, field), "The given field \"" ~ field ~ "\" doesn't exist in the type \"" ~ T.stringof ~ "\"");
+}
+body
+{
+	enum len = T.stringof.length;
+
+	foreach (i, dummy ; typeof(T.tupleof))
+	{
+		enum f = T.tupleof[i].stringof[1 + len + 2 .. $];
+
+		static if (f == field)
+		{
+			t.tupleof[i] = value;
+			break;
+		}
+	}
+}
+
+/*
+ * Gets the value of the field with the given name
+ *
+ * Params:
+ *     t = an instance of the type that has the field
+ *
+ * Returns: the value of the field
+ */
+U getValueOfField (T, U, string field) (T t)
+in
+{
+	static assert(hasField!(T, field), "The given field \"" ~ field ~ "\" doesn't exist in the type \"" ~ T.stringof ~ "\"");
+}
+body
+{
+	enum len = T.stringof.length;
+
+	foreach (i, dummy ; typeof(T.tupleof))
+	{
+		enum f = T.tupleof[i].stringof[1 + len + 2 .. $];
+
+		static if (f == field)
+			return t.tupleof[i];
+	}
+
+	assert(0);
 }

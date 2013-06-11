@@ -6,11 +6,10 @@
  */
 module std.serialization.serializable;
 
-import orange.core.Attribute;
+import std.serialization.attribute;
 import std.serialization.archives.archive;
 import std.serialization.events;
 import std.serialization.serializer;
-import orange.util.CTFE;
 
 /**
  * This interface represents a type that this is serializable. To implement this interface
