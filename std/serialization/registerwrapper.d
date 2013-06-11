@@ -8,6 +8,8 @@ module std.serialization.registerwrapper;
 
 import std.serialization.serializer;
 
+package:
+
 /**
  * This class is the base of all register wrappers. A register wrapper wraps a function
  * that is registered with the serializer. The serializer calls this function to perform

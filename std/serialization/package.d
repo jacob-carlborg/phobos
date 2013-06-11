@@ -9,7 +9,6 @@ module std.serialization;
 public:
 
 import std.serialization.events;
-import std.serialization.registerwrapper;
 import std.serialization.serializable;
 import std.serialization.serializationexception;
 import std.serialization.serializer;

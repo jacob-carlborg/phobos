@@ -7,11 +7,10 @@
 module std.serialization.archives.xmlarchive;
 
 import std.conv;
-
-import orange.serialization.archives._;
+import std.serialization.archives.xmldocument;
+import std.serialization.archives.archive;
 import std.serialization.serializer;
-import orange.util._;
-import orange.xml.XmlDocument;
+import std.traits;
 
 private enum ArchiveMode
 {
@@ -195,10 +194,10 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void archiveArray (Array array, string type, string key, Id id, void delegate () dg)
 	{
-		restore(lastElement) in {
-			internalArchiveArray(array, type, key, id, Tags.arrayTag);
-			dg();
-		};
+	    restore!(lastElement, {
+	        internalArchiveArray(array, type, key, id, Tags.arrayTag);
+			dg();	
+	    });
 	}
 
 	private void internalArchiveArray(Array array, string type, string key, Id id, Data tag, Data content = null)
@@ -247,7 +246,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void archiveAssociativeArray (string keyType, string valueType, size_t length, string key, Id id, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			lastElement = lastElement.element(Tags.associativeArrayTag)
 			.attribute(Attributes.keyTypeAttribute, toData(keyType))
 			.attribute(Attributes.valueTypeAttribute, toData(valueType))
@@ -256,7 +255,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 			.attribute(Attributes.idAttribute, toData(id));
 
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -336,12 +335,12 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 	private void internalArchiveAAKeyValue (string key, Data tag, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			lastElement = lastElement.element(tag)
 			.attribute(Attributes.keyAttribute, toData(key));
 
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -524,7 +523,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void archiveObject (string runtimeType, string type, string key, Id id, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			lastElement = lastElement.element(Tags.objectTag)
 			.attribute(Attributes.runtimeTypeAttribute, toData(runtimeType))
 			.attribute(Attributes.typeAttribute, toData(type))
@@ -532,7 +531,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 			.attribute(Attributes.idAttribute, toData(id));
 
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -584,13 +583,13 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void archivePointer (string key, Id id, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			lastElement = lastElement.element(Tags.pointerTag)
 			.attribute(Attributes.keyAttribute, toData(key))
 			.attribute(Attributes.idAttribute, toData(id));
 
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -698,14 +697,14 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void archiveStruct (string type, string key, Id id, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			lastElement = lastElement.element(Tags.structTag)
 			.attribute(Attributes.typeAttribute, toData(type))
 			.attribute(Attributes.keyAttribute, toData(key))
 			.attribute(Attributes.idAttribute, toData(id));
 
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -731,14 +730,14 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void archiveTypedef (string type, string key, Id id, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			lastElement = lastElement.element(Tags.typedefTag)
 			.attribute(Attributes.typeAttribute, toData(type))
 			.attribute(Attributes.keyAttribute, toData(key))
 			.attribute(Attributes.idAttribute, toData(id));
 
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -768,12 +767,12 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 	private void archiveString (T) (T value, string key, Id id)
 	{
-		restore(lastElement) in {
-			alias ElementTypeOfArray!(T) ElementType;
+		restore!(lastElement, {
+			alias ArrayTypeOf!(T) ElementType;
 			auto array = Array(value.ptr, value.length, ElementType.sizeof);
 
 			internalArchiveArray(array, ElementType.stringof, key, id, Tags.stringTag, toData(value));
-		};
+		});
 	}
 
 	/// Ditto
@@ -945,7 +944,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	Id unarchiveArray (string key, void delegate (size_t) dg)
 	{
-		return restore!(Id)(lastElement) in {
+		return restore!(lastElement, {
 			auto element = getElement(Tags.arrayTag, key);
 
 			if (!element.isValid)
@@ -966,7 +965,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 			dg(length);
 
 			return toId(id);
-		};
+		});
 	}
 
 	/**
@@ -991,7 +990,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void unarchiveArray (Id id, void delegate (size_t) dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			auto element = getElement(Tags.arrayTag, to!(string)(id), Attributes.idAttribute);
 
 			if (!element.isValid)
@@ -1010,7 +1009,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 				return;
 
 			dg(length);
-		};
+		});
 	}
 
 	/**
@@ -1038,7 +1037,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	Id unarchiveAssociativeArray (string key, void delegate (size_t length) dg)
 	{
-		return restore!(Id)(lastElement) in {
+		return restore!(lastElement, {
 			auto element = getElement(Tags.associativeArrayTag, key);
 
 			if (!element.isValid)
@@ -1059,7 +1058,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 			dg(length);
 
 			return toId(id);
-		};
+		});
 	}
 
 	/**
@@ -1134,7 +1133,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 	private void internalUnarchiveAAKeyValue (string key, Data tag, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			auto element = getElement(tag, key);
 
 			if (!element.isValid)
@@ -1143,7 +1142,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 			lastElement = element;
 
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -1312,7 +1311,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	{
 		auto tag = Tags.enumTag;
 
-		static if (isString!(U))
+		static if (isSomeString!(U))
 			auto element = getElement(Tags.enumTag, keyOrId);
 
 		else static if (is(U == Id))
@@ -1386,7 +1385,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void unarchiveObject (string key, out Id id, out Object result, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			auto tmp = getElement(Tags.objectTag, key, Attributes.keyAttribute, false);
 
 			if (!tmp.isValid)
@@ -1411,7 +1410,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 			id = toId(stringId);
 			result = newInstance(name);
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -1434,7 +1433,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	Id unarchivePointer (string key, void delegate () dg)
 	{
-		return restore!(Id)(lastElement) in {
+		return restore!(lastElement, {
 			auto tmp = getElement(Tags.pointerTag, key, Attributes.keyAttribute, false);
 
 			if (!tmp.isValid)
@@ -1452,7 +1451,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 			dg();
 
 			return toId(id);
-		};
+		});
 	}
 
 	/**
@@ -1549,7 +1548,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void unarchiveStruct (string key, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			auto element = getElement(Tags.structTag, key);
 
 			if (!element.isValid)
@@ -1557,7 +1556,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 			lastElement = element;
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -1584,7 +1583,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void unarchiveStruct (Id id, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			auto element = getElement(Tags.structTag, toData(id), Attributes.idAttribute);
 
 			if (!element.isValid)
@@ -1592,7 +1591,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 			lastElement = element;
 			dg();
-		};
+		});
 	}
 
 	private T unarchiveTypeDef (T) (DataType key)
@@ -1627,7 +1626,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 */
 	void unarchiveTypedef (string key, void delegate () dg)
 	{
-		restore(lastElement) in {
+		restore!(lastElement, {
 			auto element = getElement(Tags.typedefTag, key);
 
 			if (!element.isValid)
@@ -1635,7 +1634,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 			lastElement = element;
 			dg();
-		};
+		});
 	}
 
 	/**
@@ -2037,7 +2036,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	{
 		auto tag = toData(T.stringof);
 
-		static if (isString!(U))
+		static if (isSomeString!(U))
 			auto element = getElement(tag, keyOrId);
 
 		else static if (is(U == Id))
@@ -2150,4 +2149,16 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 		else static if (mode == ArchiveMode.unarchiving)
 			enum errorMessage = "Could not continue unarchiving due to unrecognized data format: ";
 	}
+}
+
+private:
+
+auto restore (alias variable, alias dg) ()
+{
+    auto tmp = variable;
+
+    scope (exit)
+        variable = tmp;
+
+    return dg();
 }
