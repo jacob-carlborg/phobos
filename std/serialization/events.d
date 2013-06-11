@@ -6,8 +6,7 @@
  */
 module std.serialization.events;
 
-import orange.core.Attribute;
-import orange.util._;
+import std.serialization.attribute;
 
 /**
  * This event is triggered after the struct/class, this template has been mixed into,
