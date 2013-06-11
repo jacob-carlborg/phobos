@@ -4,12 +4,12 @@
  * Version: Initial created: Jan 26, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
  */
-module orange.serialization.archives.XmlArchive;
+module std.serialization.archives.xmlarchive;
 
 import std.conv;
 
 import orange.serialization.archives._;
-import orange.serialization.Serializer;
+import std.serialization.serializer;
 import orange.util._;
 import orange.xml.XmlDocument;
 
