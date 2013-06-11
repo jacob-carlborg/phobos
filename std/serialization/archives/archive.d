@@ -8,12 +8,12 @@ module std.serialization.archives.archive;
 
 import std.array;
 import std.conv;
-import std.utf;
-static import std.string;
-
 import std.serialization.serializationexception;
 import std.serialization.serializer;
-import orange.util.Traits;
+import std.traits;
+import std.utf;
+
+static import std.string;
 
 /**
  * This interface represents an archive. This is the interface all archive
@@ -113,7 +113,7 @@ interface Archive
 	 * };
 	 * ---
 	 */
-	ErrorCallback errorCallback ();
+	@property ErrorCallback errorCallback ();
 
 	/**
 	 * This callback will be called when an unexpected event occurs, i.e. an expected element
@@ -128,7 +128,7 @@ interface Archive
 	 * };
 	 * ---
 	 */
-	ErrorCallback errorCallback (ErrorCallback errorCallback);
+	@property ErrorCallback errorCallback (ErrorCallback errorCallback);
 
 	/// Starts the archiving process. Call this method before archiving any values.
 	void beginArchiving ();
@@ -1481,4 +1481,55 @@ abstract class ArchiveBase (U) : Archive
 
 		return cast(wchar) c;
 	}
+}
+
+private
+{
+	version (LDC)
+		extern (C) Object _d_allocclass(in ClassInfo);
+
+	else
+		extern (C) Object _d_newclass(in ClassInfo);
+}
+
+package:
+
+/**
+ * Returns a new instnace of the class associated with the given class info.
+ *
+ * Params:
+ *     classInfo = the class info associated with the class
+ *
+ * Returns: a new instnace of the class associated with the given class info.
+ */
+Object newInstance (in ClassInfo classInfo)
+{
+	version (LDC)
+	{
+		Object object = _d_allocclass(classInfo);
+        (cast(byte*) object)[0 .. classInfo.init.length] = classInfo.init[];
+
+        return object;
+	}
+
+	else
+		return _d_newclass(classInfo);
+}
+
+/**
+ * Return a new instance of the class with the given name.
+ *
+ * Params:
+ *     name = the fully qualified name of the class
+ *
+ * Returns: a new instance or null if the class name could not be found
+ */
+Object newInstance (string name)
+{
+	auto classInfo = ClassInfo.find(name);
+
+	if (!classInfo)
+		return null;
+
+	return newInstance(classInfo);
 }
