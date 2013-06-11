@@ -4,7 +4,7 @@
  * Version: Initial created: Jan 26, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
  */
-module orange.serialization.Events;
+module std.serialization.events;
 
 import orange.core.Attribute;
 import orange.util._;
@@ -18,7 +18,7 @@ import orange.util._;
  */
 template OnDeserialized (alias method)
 {
-	static orange.serialization.Events.Event!(method) __onDeserialized;
+	static std.serialization.events.Event!(method) __onDeserialized;
 }
 
 /**
@@ -36,7 +36,7 @@ template OnDeserialized (alias method)
  */
 template OnDeserializing (alias method)
 {
-	static orange.serialization.Events.Event!(method) __onDeserializing;
+	static std.serialization.events.Event!(method) __onDeserializing;
 }
 
 /**
@@ -54,7 +54,7 @@ template OnDeserializing (alias method)
  */
 template OnSerialized (alias method)
 {
-	static orange.serialization.Events.Event!(method) __onSerialized;
+	static std.serialization.events.Event!(method) __onSerialized;
 }
 
 /**
@@ -72,7 +72,7 @@ template OnSerialized (alias method)
  */
 template OnSerializing (alias method)
 {
-	static orange.serialization.Events.Event!(method) __onSerializing;
+	static std.serialization.events.Event!(method) __onSerializing;
 }
 
 /**
