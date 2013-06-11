@@ -164,7 +164,10 @@ STD_MODULES = $(addprefix std/, \
   signals socket socketstream stdint stdio stdiobase stream \
   string syserror system traits typecons typetuple uni uri utf uuid variant \
   xml zip zlib $(addprefix algorithm/,comparison iteration \
-    mutation searching setops sorting))
+    mutation searching setops sorting) \
+	$(addprefix serialization/, events registerwrapper serializable \
+		serializationexception serializer $(addprefix archives/, archive \
+		xmlarchive)))
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
