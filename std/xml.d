@@ -136,6 +136,30 @@ import std.encoding;
 
 enum cdata = "<![CDATA[";
 
+final class Attribute : Element
+{
+    private string name_;
+    private string value_;
+
+    this (string name, string value, Element parent)
+    {
+        super(name);
+        name_ = name;
+        value_ = value;
+        this.parent = parent;
+    }
+
+    override string name ()
+    {
+        return name_;
+    }
+
+    override string value ()
+    {
+        return value_;
+    }
+}
+
 /**
  * Returns true if the character is a character according to the XML standard
  *
@@ -668,6 +692,7 @@ class Element : Item
     Comment[] comments; /// The element's comments
     ProcessingInstruction[] pis; /// The element's processing instructions
     Element[] elements; /// The element's child elements
+    Element parent; /// The elements's parent
 
     /**
      * Constructs an Element given a name and a string to be used as a Text
@@ -701,6 +726,37 @@ class Element : Item
         tag.type = TagType.EMPTY;
         foreach(k,v;tag_.attr) tag.attr[k] = v;
         tag.tagString = tag_.tagString;
+    }
+
+    /// Returns the name of the element.
+    string name ()
+    {
+        return tag.name;
+    }
+
+    /// Returns the value of the element.
+    string value ()
+    {
+        return text();
+    }
+
+    /// Returns all attributes.
+    @property Attribute[] attributes ()
+    {
+        Attribute[] attrs;
+        attrs.reserve(tag.attr.length);
+
+        foreach (k, v ; tag.attr)
+            attrs ~= new Attribute(k, v, this);
+
+        return attrs;
+    }
+
+    /// Set attribute of the given name with the given value.
+    Element attribute (string name, string value = null)
+    {
+        tag.attr[name] = value;
+        return this;
     }
 
     /**
