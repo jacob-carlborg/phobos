@@ -4,14 +4,14 @@
  * Version: Initial created: Jan 26, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
  */
-module orange.serialization.Serializer;
+module std.serialization.serializer;
 
 import std.conv;
 import std.array;
 
 import orange.core.Attribute;
 import orange.serialization._;
-import orange.serialization.archives.Archive;
+import std.serialization.archives.archive;
 import orange.util._;
 import orange.util.collection.Array;
 
@@ -910,7 +910,7 @@ class Serializer
 				static if (isVoid!(BaseTypeOfPointer!(T)))
 					error(`The value with the key "` ~ to!(string)(key) ~ `"` ~
 						format!(` of the type "`, T, `" cannot be serialized on `,
-						`its own, either implement orange.serialization.Serializable`,
+						`its own, either implement std.serialization.serializable`,
 						`.isSerializable or register a serializer.`));
 
 				else
@@ -1408,7 +1408,7 @@ class Serializer
 				static if (isVoid!(BaseTypeOfPointer!(T)))
 					error(`The value with the key "` ~ to!(string)(key) ~ `"` ~
 						format!(` of the type "`, T, `" cannot be deserialized on `
-						`its own, either implement orange.serialization.Serializable`
+						`its own, either implement std.serialization.serializable`
 						`.isSerializable or register a deserializer.`));
 
 				else

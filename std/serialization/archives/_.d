@@ -8,5 +8,5 @@ module orange.serialization.archives._;
 
 public:
 
-import orange.serialization.archives.Archive;
-import orange.serialization.archives.XmlArchive;
+import std.serialization.archives.archive;
+import std.serialization.archives.xmlarchive;

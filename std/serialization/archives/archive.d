@@ -4,15 +4,15 @@
  * Version: Initial created: Feb 6, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
  */
-module orange.serialization.archives.Archive;
+module std.serialization.archives.archive;
 
 import std.array;
 import std.conv;
 import std.utf;
 static import std.string;
 
-import orange.serialization.SerializationException;
-import orange.serialization.Serializer;
+import std.serialization.serializationexception;
+import std.serialization.serializer;
 import orange.util.Traits;
 
 /**

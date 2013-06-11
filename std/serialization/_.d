@@ -8,8 +8,8 @@ module orange.serialization._;
 
 public:
 
-import orange.serialization.Events;
-import orange.serialization.RegisterWrapper;
-import orange.serialization.Serializable;
-import orange.serialization.SerializationException;
-import orange.serialization.Serializer;
+import std.serialization.events;
+import std.serialization.registerwrapper;
+import std.serialization.serializable;
+import std.serialization.serializationexception;
+import std.serialization.serializer;
