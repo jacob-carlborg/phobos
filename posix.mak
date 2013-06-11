@@ -165,9 +165,9 @@ STD_MODULES = $(addprefix std/, \
   string syserror system traits typecons typetuple uni uri utf uuid variant \
   xml zip zlib $(addprefix algorithm/,comparison iteration \
     mutation searching setops sorting) \
-	$(addprefix serialization/, events registerwrapper serializable \
+	$(addprefix serialization/, attribute events registerwrapper serializable \
 		serializationexception serializer $(addprefix archives/, archive \
-		xmlarchive)))
+		xmlarchive xmldocument)))
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
