@@ -9,9 +9,9 @@ module std.serialization.tests.event;
 version (unittest):
 private:
 
-import std.serialization.Serializer;
-import std.serialization.Events;
-import std.serialization.archives.XmlArchive;
+import std.serialization.serializer;
+import std.serialization.events;
+import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
 
 Serializer serializer;
