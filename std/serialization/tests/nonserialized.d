@@ -9,9 +9,9 @@ module std.serialization.tests.nonserialized;
 version (unittest):
 private:
 
-import std.serialization.Serializer;
-import std.serialization.Serializable;
-import std.serialization.archives.XmlArchive;
+import std.serialization.serializer;
+import std.serialization.serializable;
+import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
 
 Serializer serializer;

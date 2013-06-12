@@ -9,8 +9,8 @@ module std.serialization.tests.enum;
 version (unittest):
 private:
 
-import std.serialization.Serializer;
-import std.serialization.archives.XmlArchive;
+import std.serialization.serializer;
+import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
 
 Serializer serializer;
