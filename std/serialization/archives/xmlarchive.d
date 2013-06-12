@@ -103,8 +103,8 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	{
 		if (!hasBegunArchiving)
 		{
-			doc.header;
-			lastElement = doc.tree.element(Tags.archiveTag)
+			doc.header();
+			lastElement = doc.tree().element(Tags.archiveTag)
 				.attribute(Attributes.typeAttribute, archiveType)
 				.attribute(Attributes.versionAttribute, archiveVersion);
 			lastElement = lastElement.element(Tags.dataTag);
@@ -128,7 +128,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 			doc.parse(data);
 			hasBegunUnarchiving = true;
 
-			auto set = doc.query[Tags.archiveTag][Tags.dataTag];
+			auto set = doc.query()[Tags.archiveTag][Tags.dataTag];
 
 			if (set.nodes.length == 1)
 				lastElement = set.nodes[0];
@@ -147,15 +147,15 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	}
 
 	/// Returns the data stored in the archive in an untyped form.
-	UntypedData untypedData ()
+	@property UntypedData untypedData ()
 	{
 		return doc.toString();
 	}
 
 	/// Returns the data stored in the archive in an typed form.
-	Data data ()
+	@property Data data ()
 	{
-		return doc.toString;
+		return doc.toString();
 	}
 
 	/**
@@ -166,7 +166,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	{
 		hasBegunArchiving = false;
 		hasBegunUnarchiving = false;
-		doc.reset;
+		doc.reset();
 	}
 
 	/**
@@ -2097,7 +2097,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 	private doc.Node getElement (Data tag, string key, Data attribute = Attributes.keyAttribute, bool throwOnError = true)
 	{
-		auto set = lastElement.query[tag].attribute((doc.Node node) {
+		auto set = lastElement.query()[tag].attribute((doc.Node node) {
 			if (node.name == attribute && node.value == key)
 				return true;
 
@@ -2124,7 +2124,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 		if (!element.isValid)
 			element = lastElement;
 
-		auto set = element.query.attribute(attribute);
+		auto set = element.query().attribute(attribute);
 
 		if (set.nodes.length == 1)
 			return set.nodes[0].value;
@@ -2153,7 +2153,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 private:
 
-auto restore (alias variable, alias dg) ()
+@property auto restore (alias variable, alias dg) ()
 {
     auto tmp = variable;
 

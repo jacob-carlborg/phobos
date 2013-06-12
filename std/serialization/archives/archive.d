@@ -142,7 +142,7 @@ interface Archive
 	void beginUnarchiving (UntypedData data);
 
 	/// Returns the data stored in the archive in an untyped form.
-	UntypedData untypedData ();
+	@property UntypedData untypedData ();
 
 	/**
 	 * Resets the archive. This resets the archive in a state making it ready to start
@@ -1289,7 +1289,7 @@ abstract class ArchiveBase (U) : Archive
 	 * };
 	 * ---
 	 */
-	ErrorCallback errorCallback ()
+	@property ErrorCallback errorCallback ()
 	{
 		return errorCallback_;
 	}
@@ -1307,7 +1307,7 @@ abstract class ArchiveBase (U) : Archive
 	 * };
 	 * ---
 	 */
-	ErrorCallback errorCallback (ErrorCallback errorCallback)
+	@property ErrorCallback errorCallback (ErrorCallback errorCallback)
 	{
 		return errorCallback_ = errorCallback;
 	}
