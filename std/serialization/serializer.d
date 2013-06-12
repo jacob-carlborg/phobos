@@ -9,7 +9,6 @@ module std.serialization.serializer;
 import std.algorithm : canFind;
 import std.array;
 import std.conv;
-import std.exception;
 import std.serialization.archives.archive;
 import std.serialization.attribute;
 import std.serialization.events;
@@ -143,7 +142,7 @@ class Serializer
 			Id id = Id.max;
 			string key;
 
-			bool isValid ()
+			@property bool isValid ()
 			{
 				return id != Id.max && key.length > 0;
 			}
@@ -664,7 +663,7 @@ class Serializer
 			hasBegunSerializing = true;
 
 		serializeInternal(value, key);
-		postProcess;
+		postProcess();
 
 		return archive.untypedData;
 	}
@@ -705,10 +704,10 @@ class Serializer
 		alias Unqual!(U) T;
 
 		if (!key)
-			key = nextKey;
+			key = nextKey();
 
 		if (id == Id.max)
-			id = nextId;
+			id = nextId();
 
 		archive.beginArchiving();
 
@@ -754,7 +753,7 @@ class Serializer
 
 	private void serializeObject (T) (T value, string key, Id id)
 	{
-		auto typeName = typeid(T).toString;
+		auto typeName = typeid(T).toString();
 
 		static if (!isNonSerialized!(T)())
 		{
@@ -844,7 +843,7 @@ class Serializer
 	{
 		auto array = Array(value.ptr, value.length, ElementTypeOfArray!(T).sizeof);
 
-		archive.archiveArray(array, arrayToString!(T), key, id, {
+		archive.archiveArray(array, arrayToString!(T)(), key, id, {
 		    for (size_t i = 0; i < value.length; i++)
 		    {
 		        const e = value[i];
@@ -889,7 +888,7 @@ class Serializer
 	private void serializePointer (T) (T value, string key, Id id)
 	{
 		if (!value)
-			return archive.archiveNull(typeid(T).toString, key);
+			return archive.archiveNull(typeid(T).toString(), key);
 
 		auto reference = getSerializedReference(value);
 
@@ -919,10 +918,10 @@ class Serializer
 					auto valueMeta = getSerializedValue(value);
 
 					if (valueMeta.isValid)
-						archive.archiveReference(nextKey, valueMeta.id);
+						archive.archiveReference(nextKey(), valueMeta.id);
 
 					else
-						serializeInternal(*value, nextKey);
+						serializeInternal(*value, nextKey());
 				}
 			}
 		});
@@ -946,8 +945,8 @@ class Serializer
 
 	private void serializeTypedef (T) (T value, string key, Id id)
 	{
-		archive.archiveTypedef(typeid(T).toString, key, nextId, {
-			serializeInternal!(OriginalType!(T))(value, nextKey);
+		archive.archiveTypedef(typeid(T).toString, key, nextId(), {
+			serializeInternal!(OriginalType!(T))(value, nextKey());
 		});
 	}
 
@@ -989,7 +988,7 @@ class Serializer
 			hasBegunDeserializing = true;
 
 		if (key.empty())
-			key = nextKey;
+			key = nextKey();
 
 		archive.beginUnarchiving(data);
 		auto value = deserializeInternal!(T)(key);
@@ -1163,7 +1162,7 @@ class Serializer
 
 			T value;
 			Object untypedValue;
-			nextId;
+			nextId();
 
 			archive.unarchiveObject(keyOrId, id, untypedValue, {
 				value = cast(T) untypedValue;
@@ -1199,7 +1198,7 @@ class Serializer
 								(*deserializer)(this, value, deserializing);
 
 							else
-								error(`The object of the static type "` ~ typeid(T).toString ~
+								error(`The object of the static type "` ~ typeid(T).toString() ~
 									`" have a different runtime type (` ~ runtimeType ~
 									`) and therefore needs to either register its type or register a deserializer for its type "`
 									~ runtimeType ~ `".`);
@@ -1223,7 +1222,7 @@ class Serializer
 
 		static if (!isNonSerialized!(T)())
 		{
-			nextId;
+			nextId();
 
 			archive.unarchiveStruct(key, {
 				triggerEvents(value, {
@@ -1413,7 +1412,7 @@ class Serializer
 
 				else
 				{
-					auto k = nextKey;
+					auto k = nextKey();
 					pointeeId = deserializeReference(k);
 
 					if (pointeeId == Id.max)
@@ -1449,7 +1448,7 @@ class Serializer
 		T value;
 
 		archive.unarchiveTypedef!(T)(key, {
-			value = cast(T) deserializeInternal!(OriginalType!(T))(nextKey);
+			value = cast(T) deserializeInternal!(OriginalType!(T))(nextKey());
 		});
 
 		return value;
@@ -1469,14 +1468,14 @@ class Serializer
 	{
 		static assert(isStruct!(T) || isObject!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
 
-		enum nonSerializedFields = collectAnnotations!(T);
+		enum nonSerializedFields = collectAnnotations!(T)();
 
 		foreach (i, dummy ; typeof(T.tupleof))
 		{
 			enum field = nameOfFieldAt!(T, i);
 			mixin(`alias getAttributes!(value.` ~ field ~ `) attributes;`);
 
-			static if (attributes.contains!(nonSerialized) ||
+			static if (attributes.contains!(nonSerialized)() ||
 				internalFields.canFind(field) ||
 				nonSerializedFields.canFind(field))
 			{
@@ -1486,7 +1485,7 @@ class Serializer
 			alias typeof(T.tupleof[i]) Type;
 
 			auto v = value.tupleof[i];
-			auto id = nextId;
+			auto id = nextId();
 
 			static if (isPointer!(Type))
 				auto pointer = v;
@@ -1522,7 +1521,7 @@ class Serializer
 	{
 		static assert(isStruct!(T) || isObject!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
 
-		enum nonSerializedFields = collectAnnotations!(T);
+		enum nonSerializedFields = collectAnnotations!(T)();
 
 		static if (isObject!(T))
 			auto rawObject = cast(void*) value;
@@ -1535,7 +1534,7 @@ class Serializer
 			enum field = nameOfFieldAt!(T, i);
 			mixin(`alias getAttributes!(value.` ~ field ~ `) attributes;`);
 
-			static if (attributes.contains!(nonSerialized) ||
+			static if (attributes.contains!(nonSerialized)() ||
 				internalFields.canFind(field) ||
 				nonSerializedFields.canFind(field))
 			{
@@ -1578,7 +1577,7 @@ class Serializer
 				else
 				{
    					*fieldAddress = deserializeInternal!(Type)(toData(field));
-                       addDeserializedValue(value.tupleof[i], nextId);
+                    addDeserializedValue(value.tupleof[i], nextId());
 				}
 			}
 		}
@@ -1593,7 +1592,7 @@ class Serializer
 
 		static if (!is(Unqual!(Base) == Object))
 		{
-			archive.archiveBaseClass(typeid(Base).toString, nextKey, nextId);
+			archive.archiveBaseClass(typeid(Base).toString, nextKey(), nextId());
 			inout Base base = value;
 			objectStructSerializeHelper(base);
 		}
@@ -1605,7 +1604,7 @@ class Serializer
 
 		static if (!is(Unqual!(Base) == Object))
 		{
-			archive.unarchiveBaseClass(nextKey);
+			archive.unarchiveBaseClass(nextKey());
 			Base base = value;
 			objectStructDeserializeHelper(base);
 		}
@@ -1776,7 +1775,7 @@ class Serializer
 
 	private string arrayToString (T) ()
 	{
-		return typeid(ElementTypeOfArray!(T)).toString;
+		return typeid(ElementTypeOfArray!(T)).toString();
 	}
 
 	private bool isBaseClass (T) (T value)
@@ -1826,7 +1825,7 @@ class Serializer
 			{
 				mixin(`alias getAttributes!(T.` ~ m ~ `) attrs;`);
 
-				static if (attrs.contains!(event))
+				static if (attrs.contains!(event)())
 					__traits(getMember, value, m)();
 			}
 		}
@@ -1863,9 +1862,9 @@ class Serializer
 
 	private static bool isNonSerialized (T) ()
 	{
-		enum nonSerializedFields = collectAnnotations!(T);
+		enum nonSerializedFields = collectAnnotations!(T)();
 
-		return nonSerializedFields.canFind("this") || getAttributes!(T).contains!(nonSerialized);
+		return nonSerializedFields.canFind("this") || getAttributes!(T).contains!(nonSerialized)();
 	}
 
 	private static template hasAnnotation (T, string annotation)
@@ -2023,6 +2022,11 @@ template isVoid (T)
 template isStruct (T)
 {
     enum isStruct = is(T == struct);
+}
+
+template ElementTypeOfArray(T : T[])
+{
+	alias T ElementTypeOfArray;
 }
 
 inout(T)[] assumeUnique (T) (ref T[] source, ref inout(T)[] destination)
