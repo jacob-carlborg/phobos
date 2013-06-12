@@ -78,9 +78,9 @@ class H
 
 H h;
 
-unittest
+void beforeEach ()
 {
-	archive = new XmlArchive!(char);
+    archive = new XmlArchive!(char);
 	serializer = new Serializer(archive);
 
 	h = new H;
@@ -106,37 +106,44 @@ unittest
 	h.ushort_ = 1U;
 	h.wchar_ = 'c';
 
-	enum zero = "0x0p+0";
+	serializer.serialize(h);
+}
 
-	describe("serialize primitives") in {
-		it("should return serialized primitives") in {
-			serializer.reset;
-			serializer.serialize(h);
+@describe("serialize primitives")
+{
+	@it("should return serialized primitives") unittest
+	{
+	    enum zero = "0x0p+0";
 
-			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(H).toString() ~ `" type="` ~ fullyQualifiedName!(H) ~ `" key="0" id="0"`));
-			assert(archive.data().containsXmlTag("bool", `key="bool_" id="1"`, "true"));
-			assert(archive.data().containsXmlTag("byte", `key="byte_" id="2"`, "1"));
-			assert(archive.data().containsXmlTag("char", `key="char_" id="3"`, "a"));
-			assert(archive.data().containsXmlTag("dchar", `key="dchar_" id="4"`, "b"));
-			assert(archive.data().containsXmlTag("double", `key="double_" id="5"`, zero));
-			assert(archive.data().containsXmlTag("float", `key="float_" id="6"`, zero));
-			assert(archive.data().containsXmlTag("int", `key="int_" id="7"`, "1"));
-			assert(archive.data().containsXmlTag("long", `key="long_" id="8"`, "1"));
-			assert(archive.data().containsXmlTag("real", `key="real_" id="9"`, zero));
-			assert(archive.data().containsXmlTag("short", `key="short_" id="10"`, "1"));
-			assert(archive.data().containsXmlTag("ubyte", `key="ubyte_" id="11"`, "1"));
-			assert(archive.data().containsXmlTag("uint", `key="uint_" id="12"`, "1"));
-			assert(archive.data().containsXmlTag("ulong", `key="ulong_" id="13"`, "1"));
-			assert(archive.data().containsXmlTag("ushort", `key="ushort_" id="14"`, "1"));
-			assert(archive.data().containsXmlTag("wchar", `key="wchar_" id="15"`, "c"));
-		};
-	};
+		beforeEach();
 
-	describe("deserialize primitives") in {
-		it("should return deserialized primitives equal to the original primitives") in {
-			auto hDeserialized = serializer.deserialize!(H)(archive.untypedData);
-			assert(h == hDeserialized);
-		};
-	};
+		assert(archive.data().containsDefaultXmlContent());
+		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(H).toString() ~ `" type="` ~ fullyQualifiedName!(H) ~ `" key="0" id="0"`));
+		assert(archive.data().containsXmlTag("bool", `key="bool_" id="1"`, "true"));
+		assert(archive.data().containsXmlTag("byte", `key="byte_" id="2"`, "1"));
+		assert(archive.data().containsXmlTag("char", `key="char_" id="3"`, "a"));
+		assert(archive.data().containsXmlTag("dchar", `key="dchar_" id="4"`, "b"));
+		assert(archive.data().containsXmlTag("double", `key="double_" id="5"`, zero));
+		assert(archive.data().containsXmlTag("float", `key="float_" id="6"`, zero));
+		assert(archive.data().containsXmlTag("int", `key="int_" id="7"`, "1"));
+		assert(archive.data().containsXmlTag("long", `key="long_" id="8"`, "1"));
+		assert(archive.data().containsXmlTag("real", `key="real_" id="9"`, zero));
+		assert(archive.data().containsXmlTag("short", `key="short_" id="10"`, "1"));
+		assert(archive.data().containsXmlTag("ubyte", `key="ubyte_" id="11"`, "1"));
+		assert(archive.data().containsXmlTag("uint", `key="uint_" id="12"`, "1"));
+		assert(archive.data().containsXmlTag("ulong", `key="ulong_" id="13"`, "1"));
+		assert(archive.data().containsXmlTag("ushort", `key="ushort_" id="14"`, "1"));
+		assert(archive.data().containsXmlTag("wchar", `key="wchar_" id="15"`, "c"));
+	}
+}
+
+@describe("deserialize primitives")
+{
+	@it("should return deserialized primitives equal to the original primitives") unittest
+	{
+	    beforeEach();
+
+		auto hDeserialized = serializer.deserialize!(H)(archive.untypedData);
+		assert(h == hDeserialized);
+	}
 }

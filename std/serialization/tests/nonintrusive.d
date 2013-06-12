@@ -27,10 +27,10 @@ class Foo : Base
 	private int a_;
 	private int b_;
 
-	int a () { return a_; }
-	int a (int a) { return a_ = a; }
-	int b () { return b_; }
-	int b (int b) { return b_ = b; }
+	@property int a () { return a_; }
+	@property int a (int a) { return a_ = a; }
+	@property int b () { return b_; }
+	@property int b (int b) { return b_ = b; }
 }
 
 Foo foo;
@@ -52,9 +52,9 @@ void fromData (ref Foo foo, Serializer serializer, Serializer.Data key)
 	serializer.deserializeBase(foo);
 }
 
-unittest
+void beforeEach ()
 {
-	archive = new XmlArchive!(char);
+    archive = new XmlArchive!(char);
 	serializer = new Serializer(archive);
 
 	foo = new Foo;
@@ -63,36 +63,44 @@ unittest
 	foo.x = 5;
 	i = 3;
 
-	describe("serialize object using a non-intrusive method") in {
-		it("should return a custom serialized object") in {
-			Serializer.registerSerializer!(Foo)(&toData);
-			Serializer.registerDeserializer!(Foo)(&fromData);
+    Serializer.registerSerializer!(Foo)(&toData);
+	Serializer.registerDeserializer!(Foo)(&fromData);
 
-			serializer.serialize(foo);
+	serializer.serialize(foo);
+}
 
-			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Foo).toString() ~ `" type="` ~ fullyQualifiedName!(Foo) ~ `" key="0" id="0"`));
-			assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "3"));
-			assert(archive.data().containsXmlTag("int", `key="b" id="2"`, "4"));
+@describe("serialize object using a non-intrusive method")
+{
+	@it("should return a custom serialized object") unittest
+	{
+	    beforeEach();
 
-			assert(archive.data().containsXmlTag("base", `type="` ~ fullyQualifiedName!(Base) ~ `" key="1" id="3"`));
-			assert(archive.data().containsXmlTag("int", `key="x" id="4"`, "5"));
+		assert(archive.data().containsDefaultXmlContent());
+		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Foo).toString() ~ `" type="` ~ fullyQualifiedName!(Foo) ~ `" key="0" id="0"`));
+		assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "3"));
+		assert(archive.data().containsXmlTag("int", `key="b" id="2"`, "4"));
 
-			assert(i == 4);
-		};
-	};
+		assert(archive.data().containsXmlTag("base", `type="` ~ fullyQualifiedName!(Base) ~ `" key="1" id="3"`));
+		assert(archive.data().containsXmlTag("int", `key="x" id="4"`, "5"));
 
-	describe("deserialize object using a non-intrusive method") in {
-		it("short return a custom deserialized object equal to the original object") in {
-			auto f = serializer.deserialize!(Foo)(archive.untypedData);
+		assert(i == 4);
+	}
+}
 
-			assert(foo.a == f.a);
-			assert(foo.b == f.b);
-			assert(foo.x == f.x);
+@describe("deserialize object using a non-intrusive method")
+{
+	@it("short return a custom deserialized object equal to the original object") unittest
+	{
+	    beforeEach();
 
-			assert(i == 5);
+		auto f = serializer.deserialize!(Foo)(archive.untypedData);
 
-			Serializer.resetSerializers;
-		};
-	};
+		assert(foo.a == f.a);
+		assert(foo.b == f.b);
+		assert(foo.x == f.x);
+
+		assert(i == 5);
+
+		Serializer.resetSerializers();
+	}
 }
