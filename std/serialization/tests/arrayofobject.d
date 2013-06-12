@@ -12,6 +12,7 @@ private:
 import std.serialization.lserializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;
@@ -49,11 +50,11 @@ unittest
 			serializer.serialize(d);
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="tests.ArrayOfObject.D" type="tests.ArrayOfObject.D" key="0" id="0"`));
+			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(D).toString() ~ `" type="` ~ fullyQualifiedName!(D) ~ `" key="0" id="0"`));
 			assert(archive.data().containsXmlTag("array", `type="object.Object" length="2" key="arr" id="1"`));
-			assert(archive.data().containsXmlTag("object", `runtimeType="tests.ArrayOfObject.A" type="const(object.Object)" key="0" id="2"`));
+			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(A).toString() ~ `" type="const(object.Object)" key="0" id="2"`));
 			assert(archive.data().containsXmlTag("int", `key="a" id="3"`, "1"));
-			assert(archive.data().containsXmlTag("object", `runtimeType="tests.ArrayOfObject.A" type="const(object.Object)" key="1" id="4"`));
+			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(A).toString() ~ `" type="const(object.Object)" key="1" id="4"`));
 			assert(archive.data().containsXmlTag("int", `key="a" id="5"`, "2"));
 		};
 	};

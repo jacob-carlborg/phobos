@@ -13,6 +13,7 @@ import std.serialization.serializer;
 import std.serialization.events;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;

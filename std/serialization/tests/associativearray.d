@@ -12,6 +12,7 @@ private:
 import std.serialization.serializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;
@@ -37,7 +38,7 @@ unittest
 			serializer.serialize(e);
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="tests.AssociativeArray.E" type="tests.AssociativeArray.E" key="0" id="0"`));
+			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(E).toString() ~ `" type="` ~ fullyQualifiedName!(E) ~ `" key="0" id="0"`));
 
 			assert(archive.data().containsXmlTag("key", `key="0"`));
 			assert(archive.data().containsXmlTag("int", `key="0" id="2"`, "1"));

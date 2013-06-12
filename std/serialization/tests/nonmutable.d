@@ -12,6 +12,7 @@ private:
 import std.serialization.serializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;
@@ -80,13 +81,13 @@ unittest
 			serializer.serialize(a);
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().contains(`<object runtimeType="tests.NonMutable.A" type="tests.NonMutable.A" key="0" id="0">`));
+			assert(archive.data().contains(`<object runtimeType="` ~ typeid(A).toString() ~ `" type="` ~ fullyQualifiedName!(A) ~ `" key="0" id="0">`));
 
 			assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "1"));
 			assert(archive.data().containsXmlTag("int", `key="b" id="2"`, "2"));
 			assert(archive.data().containsXmlTag("string", `type="immutable(char)" length="3" key="c" id="3"`, "str"));
 
-			assert(archive.data().contains(`<object runtimeType="tests.NonMutable.B" type="immutable(tests.NonMutable.B)" key="d" id="4">`));
+			assert(archive.data().contains(`<object runtimeType="` ~ typeid(B).toString() ~ `" type="immutable(tests.NonMutable.B)" key="d" id="4">`));
 
 			assert(archive.data().containsXmlTag("pointer", `key="e" id="6"`));
 			assert(archive.data().containsXmlTag("int", `key="1" id="7"`, "3"));

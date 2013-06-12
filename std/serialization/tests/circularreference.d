@@ -12,6 +12,7 @@ private:
 import std.serialization.lserializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;
@@ -51,9 +52,9 @@ unittest
 			serializer.serialize(a);
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().contains(`<object runtimeType="tests.CircularReference.A" type="tests.CircularReference.A" key="0" id="0">`));
+			assert(archive.data().contains(`<object runtimeType="` ~ typeid(A).toString() ~ `" type="` ~ fullyQualifiedName!(A) ~ `" key="0" id="0">`));
 
-			assert(archive.data().contains(`<object runtimeType="tests.CircularReference.B" type="tests.CircularReference.B" key="b" id="1">`));
+			assert(archive.data().contains(`<object runtimeType="` ~ typeid(B).toString() ~ `" type="` ~ fullyQualifiedName!(B) ~ `" key="b" id="1">`));
 			assert(archive.data().containsXmlTag("int", `key="y" id="3"`, "4"));
 
 			assert(archive.data().containsXmlTag("int", `key="x" id="4"`, "3"));
