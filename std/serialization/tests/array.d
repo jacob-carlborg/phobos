@@ -12,6 +12,7 @@ private:
 import std.serialization.serializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 class D
 {
@@ -40,7 +41,7 @@ void beforeEach ()
         beforeEach();
 
         assert(archive.data().containsDefaultXmlContent());
-        assert(archive.data().containsXmlTag("object", `runtimeType="std.serialization.tests.array.D" type="std.serialization.tests.array.D" key="0" id="0"`));
+        assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(D).toString() ~ `" type="` ~ fullyQualifiedName!(D) ~`" key="0" id="0"`));
         assert(archive.data().containsXmlTag("array", `type="int" length="6" key="arr" id="1"`));
         assert(archive.data().containsXmlTag("int", `key="0" id="2"`, "27"));
         assert(archive.data().containsXmlTag("int", `key="1" id="3"`, "382"));

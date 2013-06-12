@@ -12,6 +12,7 @@ private:
 import std.serialization.serializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;
@@ -37,7 +38,7 @@ unittest
 			serializer.serialize(B());
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().contains(`<struct type="tests.Struct.B" key="0" id="0"/>`));
+			assert(archive.data().contains(`<struct type="` ~ fullyQualifiedName!(B) ~ `" key="0" id="0"/>`));
 		};
 	};
 
