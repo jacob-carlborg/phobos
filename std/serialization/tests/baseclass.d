@@ -9,7 +9,7 @@ module std.serialization.tests.baseclass;
 version (unittest):
 private:
 
-import std.serialization.lserializer;
+import std.serialization.serializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
 import std.traits;
@@ -46,9 +46,9 @@ class Sub : Base
 Sub sub;
 Base base;
 
-unittest
+void beforeEach ()
 {
-	archive = new XmlArchive!(char);
+    archive = new XmlArchive!(char);
 	serializer = new Serializer(archive);
 
 	sub = new Sub;
@@ -56,28 +56,36 @@ unittest
 	sub.b = 4;
 	base = sub;
 
-	describe("serialize subclass through a base class reference") in {
-		it("should return serialized subclass with the static type \"Base\" and the runtime type \"tests.BaseClass.Sub\"") in {
-			Serializer.register!(Sub);
-			serializer.serialize(base);
+    Serializer.register!(Sub);
+	serializer.serialize(base);
+}
 
-			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Sub).toString() ~ `" type="` ~ fullyQualifiedName!(Base) ~ `" key="0" id="0"`));
-			assert(archive.data().containsXmlTag("int", `key="b" id="1"`, "4"));
-			assert(archive.data().containsXmlTag("base", `type="tests.BaseClass.Base" key="1" id="2"`));
-			assert(archive.data().containsXmlTag("int", `key="a" id="3"`, "3"));
-			assert(archive.data().containsXmlTag("array", `type="inout(int)" length="0" key="c" id="4"`, true));
-		};
-	};
+@describe("serialize subclass through a base class reference")
+{
+	@it("should return serialized subclass with the static type \"Base\" and the runtime type \"tests.BaseClass.Sub\"") unittest
+	{
+	    beforeEach();
 
-	describe("deserialize subclass through a base class reference") in {
-		it("should return a deserialized subclass with the static type \"Base\" and the runtime type \"tests.BaseClass.Sub\"") in {
-			auto subDeserialized = serializer.deserialize!(Base)(archive.untypedData);
+        assert(archive.data().containsDefaultXmlContent());
+        assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Sub).toString() ~ `" type="` ~ fullyQualifiedName!(Base) ~ `" key="0" id="0"`));
+        assert(archive.data().containsXmlTag("int", `key="b" id="1"`, "4"));
+        assert(archive.data().containsXmlTag("base", `type="` ~ fullyQualifiedName!(Base) ~ `" key="1" id="2"`));
+        assert(archive.data().containsXmlTag("int", `key="a" id="3"`, "3"));
+		assert(archive.data().containsXmlTag("array", `type="inout(int)" length="0" key="c" id="4"`, true));
+	}
+}
 
-			assert(sub.a == subDeserialized.getA);
-			assert(sub.b == subDeserialized.getB);
+@describe("deserialize subclass through a base class reference")
+{
+	@it("should return a deserialized subclass with the static type \"Base\" and the runtime type \"tests.BaseClass.Sub\"") unittest
+	{
+	    beforeEach();
 
-			Serializer.resetRegisteredTypes;
-		};
-	};
+		auto subDeserialized = serializer.deserialize!(Base)(archive.untypedData);
+
+		assert(sub.a == subDeserialized.getA());
+		assert(sub.b == subDeserialized.getB());
+
+		Serializer.resetRegisteredTypes();
+	}
 }

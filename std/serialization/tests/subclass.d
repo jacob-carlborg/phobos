@@ -29,34 +29,41 @@ class Sub : Base
 
 Sub sub;
 
-unittest
+void beforeEach ()
 {
-	archive = new XmlArchive!(char);
+    archive = new XmlArchive!(char);
 	serializer = new Serializer(archive);
 
 	sub = new Sub;
 	sub.a = 3;
 	sub.b = 4;
 
-	describe("serialize a subclass") in {
-		it("should return serialized subclass") in {
-			serializer.reset;
-			serializer.serialize(sub);
+    serializer.serialize(sub);
+}
 
-			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Sub).toString() ~ `" type="` ~ fullyQualifiedName!(Sub) ~ `" key="0" id="0"`));
-			assert(archive.data().containsXmlTag("int", `key="b" id="1"`, "4"));
-			assert(archive.data().containsXmlTag("base", `type="` ~ fullyQualifiedName!(Base) ~ `" key="1" id="2"`));
-			assert(archive.data().containsXmlTag("int", `key="a" id="3"`, "3"));
-		};
-	};
+@describe("serialize a subclass")
+{
+	@it("should return serialized subclass") unittest
+	{
+		beforeEach();
 
-	describe("deserialize class with a base class") in {
-		it("should return a deserialized string equal to the original string") in {
-			auto subDeserialized = serializer.deserialize!(Sub)(archive.untypedData);
+		assert(archive.data().containsDefaultXmlContent());
+		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Sub).toString() ~ `" type="` ~ fullyQualifiedName!(Sub) ~ `" key="0" id="0"`));
+		assert(archive.data().containsXmlTag("int", `key="b" id="1"`, "4"));
+		assert(archive.data().containsXmlTag("base", `type="` ~ fullyQualifiedName!(Base) ~ `" key="1" id="2"`));
+		assert(archive.data().containsXmlTag("int", `key="a" id="3"`, "3"));
+	}
+}
 
-			assert(sub.a == subDeserialized.a);
-			assert(sub.b == subDeserialized.b);
-		};
-	};
+@describe("deserialize class with a base class")
+{
+	@it("should return a deserialized string equal to the original string") unittest
+	{
+	    beforeEach();
+
+		auto subDeserialized = serializer.deserialize!(Sub)(archive.untypedData);
+
+		assert(sub.a == subDeserialized.a);
+		assert(sub.b == subDeserialized.b);
+	}
 }

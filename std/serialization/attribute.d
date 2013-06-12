@@ -69,7 +69,7 @@ static:
 	alias sym symbol;
 
 	/// Returns true if these attributes contain the given symbol
-	bool contains (alias symbol) ()
+	@property bool contains (alias symbol) ()
 	{
 		return any ? staticIndexOf!(symbol, Attrs) != -1 : false;
 	}

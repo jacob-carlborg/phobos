@@ -1,10 +1,10 @@
 /**
- * Copyright: Copyright (c) 2013 Jacob Carlborg. All rights reserved.
- * Authors: Juan Manuel
- * Version: Initial created: Apr 14, 2013
+ * Copyright: Copyright (c) 2011 Jacob Carlborg. All rights reserved.
+ * Authors: Jacob Carlborg
+ * Version: Initial created: Aug 6, 2011
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
  */
-module std.serialization.tests.enumconstantmember;
+module std.serialization.tests.enum_;
 
 version (unittest):
 private:
@@ -17,10 +17,16 @@ import std.traits;
 Serializer serializer;
 XmlArchive!(char) archive;
 
+enum Foo
+{
+	a,
+	b,
+	c
+}
+
 class G
 {
-	int a;
-	enum int someConstant = 4 * 1024;
+	Foo foo;
 }
 
 G g;
@@ -31,28 +37,30 @@ void beforeEach ()
 	serializer = new Serializer(archive);
 
 	g = new G;
-	g.a = 123;
+	g.foo = Foo.b;
 
-	serializer.serialize(g);	
+	serializer.serialize(g);
 }
 
 @describe("serialize enum")
 {
-	@it("shouldn't fail to compile when there is a constant enum member") unittest
+	@it("should return a serialized enum") unittest
 	{
-        beforeEach();
+	    beforeEach();
 
 		assert(archive.data().containsDefaultXmlContent());
 		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(G).toString() ~ `" type="` ~ fullyQualifiedName!(G) ~ `" key="0" id="0"`));
-		assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "123"));
+		assert(archive.data().containsXmlTag("enum", `type="` ~ typeid(Foo).toString() ~ `" baseType="int" key="foo" id="1"`, "1"));
 	}
 }
 
 @describe("deserialize enum")
 {
-	@it("shouldn't fail to deserialize when there is a constant enum member") unittest
+	@it("should return an enum equal to the original enum") unittest
 	{
+	    beforeEach();
+
 		auto gDeserialized = serializer.deserialize!(G)(archive.untypedData);
-		assert(g.a == gDeserialized.a);
+		assert(g.foo == gDeserialized.foo);
 	}
 }
