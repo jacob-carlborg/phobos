@@ -13,6 +13,7 @@ import std.serialization.serializer;
 import std.serialization.serializable;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;
@@ -60,15 +61,15 @@ unittest
 			serializer.serialize(foo);
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="tests.NonSerialized.Foo" type="tests.NonSerialized.Foo" key="0" id="0"`));
+			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Foo).toString() ~ `" type="` ~ fullyQualifiedName!(Foo) ~ `" key="0" id="0"`));
 			assert(archive.data().containsXmlTag("int", `key="b" id="1"`, "4"));
 
 			assert(!archive.data().containsXmlTag("int", `key="a" id="1"`, "3"));
 			assert(!archive.data().containsXmlTag("int", `key="c" id="3"`, "5"));
 
-			assert(!archive.data().containsXmlTag("object", `runtimeType="tests.NonSerialized.Bar" type="Bar" key="bar" id="4"`));
+			assert(!archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Bar).toString() ~ `" type="Bar" key="bar" id="4"`));
 			assert(!archive.data().containsXmlTag("int", `key="c" id="5"`, "0"));
-			assert(!archive.data().containsXmlTag("object", `runtimeType="tests.NonSerialized.Baz" type="Baz" key="bar" id="6"`));
+			assert(!archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Baz).toString() ~ `" type="Baz" key="bar" id="6"`));
 			assert(!archive.data().containsXmlTag("int", `key="c" id="7"`, "0"));
 		};
 	};

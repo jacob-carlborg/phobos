@@ -12,6 +12,7 @@ private:
 import std.serialization.serializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;
@@ -42,7 +43,7 @@ unittest
 			serializer.serialize(c);
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="tests.String.C" type="tests.String.C" key="0" id="0"`));
+			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(C).toString() ~ `" type="` ~ fullyQualifiedName!(C) ~ `" key="0" id="0"`));
 			assert(archive.data().containsXmlTag("string", `type="immutable(char)" length="3" key="str" id="1"`, "foo"));
 			assert(archive.data().containsXmlTag("string", `type="immutable(wchar)" length="3" key="wstr" id="2"`, "bar"));
 			assert(archive.data().containsXmlTag("string", `type="immutable(dchar)" length="6" key="dstr" id="3"`, "foobar"));
@@ -70,7 +71,7 @@ unittest
 			serializer.serialize(u);
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="tests.String.C" type="tests.String.C" key="0" id="0"`));
+			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(C).toString() ~ `" type="` ~ fullyQualifiedName!(C) ~ `" key="0" id="0"`));
 			assert(archive.data().containsXmlTag("string", `type="immutable(char)" length="10" key="str" id="1"`, "foo åäö"));
 			assert(archive.data().containsXmlTag("string", `type="immutable(wchar)" length="7" key="wstr" id="2"`, "foo ÅÄÖ"));
 			assert(archive.data().containsXmlTag("string", `type="immutable(dchar)" length="11" key="dstr" id="3"`, "foo åäö ÅÄÖ"));
