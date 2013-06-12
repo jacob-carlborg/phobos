@@ -238,7 +238,7 @@ class Serializer
 	 * See_Also: registerSerializer
 	 * See_Also: registerDeserializer
 	 */
-	static void register (T : Object) ()
+	@property static void register (T : Object) ()
 	{
 		registeredTypes[T.classinfo] = &downcastSerialize!(T);
 	}
@@ -295,7 +295,7 @@ class Serializer
 	 */
 	static void registerSerializer (Derived, Base) (void delegate (Base, Serializer, Data) dg)
 	{
-		Serializer.serializers[typeid(Derived).toString] = toSerializeRegisterWrapper(dg);
+		Serializer.serializers[typeid(Derived).toString()] = toSerializeRegisterWrapper(dg);
 	}
 
 	/**
@@ -332,7 +332,7 @@ class Serializer
 	 */
 	static void registerSerializer (Derived, Base) (void function (Base, Serializer, Data) func)
 	{
-		Serializer.serializers[typeid(Derived).toString] = toSerializeRegisterWrapper(func);
+		Serializer.serializers[typeid(Derived).toString()] = toSerializeRegisterWrapper(func);
 	}
 
 	/**
@@ -369,7 +369,7 @@ class Serializer
 	 */
 	static void registerDeserializer (Derived, Base) (void delegate (ref Base, Serializer, Data) dg)
 	{
-		Serializer.deserializers[typeid(Derived).toString] = toDeserializeRegisterWrapper(dg);
+		Serializer.deserializers[typeid(Derived).toString()] = toDeserializeRegisterWrapper(dg);
 	}
 
 	/**
@@ -406,7 +406,7 @@ class Serializer
 	 */
 	static void registerDeserializer (Derived, Base) (void function (ref Base, Serializer, Data) func)
 	{
-		Serializer.deserializers[typeid(Derived).toString] = toDeserializeRegisterWrapper(func);
+		Serializer.deserializers[typeid(Derived).toString()] = toDeserializeRegisterWrapper(func);
 	}
 
 	/**
@@ -442,7 +442,7 @@ class Serializer
 	 */
 	void overrideSerializer (Derived, Base) (void delegate (Base, Serializer, Data) dg)
 	{
-		overriddenSerializers[typeid(Derived).toString] = toSerializeRegisterWrapper(dg);
+		overriddenSerializers[typeid(Derived).toString()] = toSerializeRegisterWrapper(dg);
 	}
 
 	/**
@@ -478,7 +478,7 @@ class Serializer
 	 */
 	void overrideSerializer (Derived, Base) (void function (Base, Serializer, Data) func)
 	{
-		overriddenSerializers[typeid(Derived).toString] = toSerializeRegisterWrapper(func);
+		overriddenSerializers[typeid(Derived).toString()] = toSerializeRegisterWrapper(func);
 	}
 
 	/**
@@ -514,7 +514,7 @@ class Serializer
 	 */
 	void overrideDeserializer (Derived, Base) (void delegate (ref Base, Serializer, Data) dg)
 	{
-		overriddenDeserializers[typeid(Derived).toString] = toDeserializeRegisterWrapper(dg);
+		overriddenDeserializers[typeid(Derived).toString()] = toDeserializeRegisterWrapper(dg);
 	}
 
 	/**
@@ -550,7 +550,7 @@ class Serializer
 	 */
 	void overrideDeserializer (Derived, Base) (void function (ref Base, Serializer, Data) func)
 	{
-		overriddenDeserializers[typeid(Derived).toString] = toDeserializeRegisterWrapper(func);
+		overriddenDeserializers[typeid(Derived).toString()] = toDeserializeRegisterWrapper(func);
 	}
 
 	/// Returns the receivers archive
@@ -806,7 +806,7 @@ class Serializer
 	{
 		static if (!isNonSerialized!(T)())
 		{
-			string type = typeid(T).toString;
+			string type = typeid(T).toString();
 
 			triggerEvents(value, {
 				archive.archiveStruct(type, key, id, {
@@ -864,8 +864,8 @@ class Serializer
 
 		addSerializedReference(value, id);
 
-		string keyType = typeid(KeyType!(T)).toString;
-		string valueType = typeid(ValueType!(T)).toString;
+		string keyType = typeid(KeyType!(T)).toString();
+		string valueType = typeid(ValueType!(T)).toString();
 
 		archive.archiveAssociativeArray(keyType, valueType, value.length, key, id, {
 			size_t i;
@@ -933,7 +933,7 @@ class Serializer
 	{
 		alias BaseTypeOfEnum!(T) EnumBaseType;
 		auto val = cast(EnumBaseType) value;
-		string type = typeid(T).toString;
+		string type = typeid(T).toString();
 
 		archive.archiveEnum(val, type, key, id);
 	}
@@ -945,7 +945,7 @@ class Serializer
 
 	private void serializeTypedef (T) (T value, string key, Id id)
 	{
-		archive.archiveTypedef(typeid(T).toString, key, nextId(), {
+		archive.archiveTypedef(typeid(T).toString(), key, nextId(), {
 			serializeInternal!(OriginalType!(T))(value, nextKey());
 		});
 	}
@@ -1226,7 +1226,7 @@ class Serializer
 
 			archive.unarchiveStruct(key, {
 				triggerEvents(value, {
-					auto type = toData(typeid(T).toString);
+					auto type = toData(typeid(T).toString());
 					auto runHelper = false;
 
 					static if (isSomeString!(U))
@@ -1592,7 +1592,7 @@ class Serializer
 
 		static if (!is(Unqual!(Base) == Object))
 		{
-			archive.archiveBaseClass(typeid(Base).toString, nextKey(), nextId());
+			archive.archiveBaseClass(typeid(Base).toString(), nextKey(), nextId());
 			inout Base base = value;
 			objectStructSerializeHelper(base);
 		}
@@ -1895,7 +1895,7 @@ class Serializer
 		Id id = Id.max;
 		Id pointee = Id.max;
 
-		bool hasPointee ()
+		@property bool hasPointee ()
 		{
 			return pointee != Id.max;
 		}
@@ -2024,9 +2024,20 @@ template isStruct (T)
     enum isStruct = is(T == struct);
 }
 
+// Evaluates the type of the element of the array.
 template ElementTypeOfArray(T : T[])
 {
 	alias T ElementTypeOfArray;
+}
+
+// Evaluates to the base type of the enum.
+template BaseTypeOfEnum (T)
+{
+	static if (is(T U == enum))
+		alias BaseTypeOfEnum!(U) BaseTypeOfEnum;
+
+	else
+		alias T BaseTypeOfEnum;
 }
 
 inout(T)[] assumeUnique (T) (ref T[] source, ref inout(T)[] destination)

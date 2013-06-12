@@ -34,7 +34,7 @@ void beforeEach ()
     serializer.serialize(d);
 }
 
-@desc("serialize array")
+@describe("serialize array")
 {
     @it("should return a serialized array") unittest
     {
@@ -52,7 +52,7 @@ void beforeEach ()
     }
 }
 
-@desc("deserialize array")
+@describe("deserialize array")
 {
     @it("should return a deserialize array equal to the original array") unittest
     {

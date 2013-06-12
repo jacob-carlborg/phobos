@@ -38,9 +38,9 @@ class Foo
 Foo foo;
 int i;
 
-unittest
+void beforeEach ()
 {
-	archive = new XmlArchive!(char);
+    archive = new XmlArchive!(char);
 	serializer = new Serializer(archive);
 
 	foo = new Foo;
@@ -48,25 +48,33 @@ unittest
 	foo.b = 4;
 	i = 3;
 
-	describe("serialize object using custom serialization methods") in {
-		it("should return a custom serialized object") in {
-			serializer.serialize(foo);
+    serializer.serialize(foo);
+}
 
-			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Foo).toString() ~ `" type="` ~ fullyQualifiedName!(Foo) ~ `" key="0" id="0"`));
-			assert(archive.data().containsXmlTag("int", `key="x" id="1"`));
+@describe("serialize object using custom serialization methods")
+{
+	@it("should return a custom serialized object") unittest
+	{
+	    beforeEach();
 
-			assert(i == 4);
-		};
-	};
+		assert(archive.data().containsDefaultXmlContent());
+		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Foo).toString() ~ `" type="` ~ fullyQualifiedName!(Foo) ~ `" key="0" id="0"`));
+		assert(archive.data().containsXmlTag("int", `key="x" id="1"`));
 
-	describe("deserialize object using custom serialization methods") in {
-		it("short return a custom deserialized object equal to the original object") in {
-			auto f = serializer.deserialize!(Foo)(archive.untypedData);
+		assert(i == 4);
+	}
+}
 
-			assert(foo.a == f.a);
+@describe("deserialize object using custom serialization methods")
+{
+	@it("short return a custom deserialized object equal to the original object") unittest
+	{
+	    beforeEach();
 
-			assert(i == 5);
-		};
-	};
+		auto f = serializer.deserialize!(Foo)(archive.untypedData);
+
+		assert(foo.a == f.a);
+
+		assert(i == 5);
+	}
 }

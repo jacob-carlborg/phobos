@@ -83,45 +83,52 @@ class Events
 
 Events events;
 
-unittest
+void beforeEach ()
 {
-	archive = new XmlArchive!(char);
+   	archive = new XmlArchive!(char);
 	serializer = new Serializer(archive);
 
 	events = new Events;
 
-	describe("serialize a class with event handlers") in {
-		it("should return serialized class with the correct values set by the event handlers") in {
-			serializer.reset;
-			serializer.serialize(events);
+	serializer.serialize(events);
+}
 
-			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Events).toString() ~ `" type="` ~ fullyQualifiedName!(Events) ~ `" key="0" id="0"`));
+@describe("serialize a class with event handlers")
+{
+	@it("should return serialized class with the correct values set by the event handlers") unittest
+	{
+        beforeEach();
 
-			assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "3"));
-			assert(archive.data().containsXmlTag("int", `key="d" id="2"`, "0"));
+		assert(archive.data().containsDefaultXmlContent());
+		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Events).toString() ~ `" type="` ~ fullyQualifiedName!(Events) ~ `" key="0" id="0"`));
 
-			assert(archive.data().containsXmlTag("int", `key="udaA" id="3"`, "3"));
-			assert(archive.data().containsXmlTag("int", `key="udaD" id="4"`, "0"));
+		assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "3"));
+		assert(archive.data().containsXmlTag("int", `key="d" id="2"`, "0"));
+
+		assert(archive.data().containsXmlTag("int", `key="udaA" id="3"`, "3"));
+		assert(archive.data().containsXmlTag("int", `key="udaD" id="4"`, "0"));
 
 
-			assert(b == 4);
-			assert(udaB == 4);
-		};
-	};
+		assert(b == 4);
+		assert(udaB == 4);
+	}
+}
 
-	describe("deserialize class with a base class") in {
-		it("should return a deserialized string equal to the original string") in {
-			auto eventsDeserialized = serializer.deserialize!(Events)(archive.untypedData);
+@describe("deserialize class with a base class")
+{
+	@it("should return a deserialized string equal to the original string") unittest
+	{
+	    beforeEach();
 
-			assert(eventsDeserialized.a == 3);
-			assert(eventsDeserialized.d == 6);
+		auto eventsDeserialized = serializer.deserialize!(Events)(archive.untypedData);
 
-			assert(eventsDeserialized.udaA == 3);
-			assert(eventsDeserialized.udaD == 6);
+		assert(eventsDeserialized.a == 3);
+		assert(eventsDeserialized.d == 6);
 
-			assert(c == 5);
-			assert(udaC == 5);
-		};
-	};
+		assert(eventsDeserialized.udaA == 3);
+		assert(eventsDeserialized.udaD == 6);
+
+		assert(c == 5);
+		assert(udaC == 5);
+	}
 }

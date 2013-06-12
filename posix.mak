@@ -169,6 +169,14 @@ STD_MODULES = $(addprefix std/, \
 		serializationexception serializer $(addprefix archives/, archive \
 		xmlarchive xmldocument)))
 
+# Unit test modules
+STD_SERIALIZATION_TESTS_MODULES = $(addprefix std/serialization/tests/, \
+        array arrayofobject associativearray associativearrayreference \
+        baseclass circularreference custom customwithstring enum_ \
+        enumconstantmember events nonintrusive nonmutable nonserialized \
+        object_ overrideserializer pointer primitive slice string struct_ \
+        subclass util)
+
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
 EXTRA_MODULES_OSX := $(addprefix std/c/osx/, socket)
@@ -200,7 +208,7 @@ EXTRA_MODULES += $(EXTRA_DOCUMENTABLES) $(EXTRA_MODULES_INTERNAL)
 
 # Aggregate all D modules relevant to this build
 D_MODULES = $(STD_MODULES) $(EXTRA_MODULES) \
-  $(addsuffix /package,$(STD_PACKAGES))
+  $(addsuffix /package,$(STD_PACKAGES)) $(STD_SERIALIZATION_TESTS_MODULES)
 
 # Add the .d suffix to the module names
 D_FILES = $(addsuffix .d,$(D_MODULES))

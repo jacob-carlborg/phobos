@@ -768,7 +768,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	private void archiveString (T) (T value, string key, Id id)
 	{
 		restore!(lastElement, {
-			alias ArrayTypeOf!(T) ElementType;
+			alias ElementTypeOfArray!(T) ElementType;
 			auto array = Array(value.ptr, value.length, ElementType.sizeof);
 
 			internalArchiveArray(array, ElementType.stringof, key, id, Tags.stringTag, toData(value));
@@ -2161,4 +2161,9 @@ private:
         variable = tmp;
 
     return dg();
+}
+
+template ElementTypeOfArray(T : T[])
+{
+	alias T ElementTypeOfArray;
 }

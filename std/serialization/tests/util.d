@@ -12,7 +12,7 @@ import std.algorithm;
 import std.array;
 import std.serialization.attribute;
 
-@attribute struct desc
+@attribute struct describe
 {
     string description;
 }
@@ -68,7 +68,7 @@ bool containsXmlTag (string source, string tag, string attributes, string conten
 		pattern ~= ' ' ~ attributes;
 
 	if (simple)
-		return source.contains(pattern ~ "/>");
+		return source.contains(pattern ~ " />");
 
 	if (content.length > 0)
 		return source.contains(pattern ~ '>' ~ content ~ "</" ~ tag ~ '>');

@@ -68,36 +68,43 @@ class A
 A a;
 immutable int ptr = 3;
 
-unittest
+void beforeEach ()
 {
-	archive = new XmlArchive!(char);
+    archive = new XmlArchive!(char);
 	serializer = new Serializer(archive);
 
 	a = new A(1, 2, "str", new immutable(B)(3), &ptr);
 
-	describe("serialize object with immutable and const fields") in {
-		it("should return a serialized object") in {
-			serializer.reset;
-			serializer.serialize(a);
+	serializer.serialize(a);
+}
 
-			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().contains(`<object runtimeType="` ~ typeid(A).toString() ~ `" type="` ~ fullyQualifiedName!(A) ~ `" key="0" id="0">`));
+@describe("serialize object with immutable and const fields")
+{
+	@it("should return a serialized object") unittest
+	{
+		beforeEach();
 
-			assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "1"));
-			assert(archive.data().containsXmlTag("int", `key="b" id="2"`, "2"));
-			assert(archive.data().containsXmlTag("string", `type="immutable(char)" length="3" key="c" id="3"`, "str"));
+		assert(archive.data().containsDefaultXmlContent());
+		assert(archive.data().contains(`<object runtimeType="` ~ typeid(A).toString() ~ `" type="` ~ fullyQualifiedName!(A) ~ `" key="0" id="0">`));
 
-			assert(archive.data().contains(`<object runtimeType="` ~ typeid(B).toString() ~ `" type="immutable(tests.NonMutable.B)" key="d" id="4">`));
+		assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "1"));
+		assert(archive.data().containsXmlTag("int", `key="b" id="2"`, "2"));
+		assert(archive.data().containsXmlTag("string", `type="immutable(char)" length="3" key="c" id="3"`, "str"));
 
-			assert(archive.data().containsXmlTag("pointer", `key="e" id="6"`));
-			assert(archive.data().containsXmlTag("int", `key="1" id="7"`, "3"));
-		};
-	};
+		assert(archive.data().contains(`<object runtimeType="` ~ typeid(B).toString() ~ `" type="immutable(` ~ fullyQualifiedName!(B) ~ `)" key="d" id="4">`));
 
-	describe("deserialize object") in {
-		it("should return a deserialized object equal to the original object") in {
-			auto aDeserialized = serializer.deserialize!(A)(archive.untypedData);
-			assert(a == aDeserialized);
-		};
-	};
+		assert(archive.data().containsXmlTag("pointer", `key="e" id="6"`));
+		assert(archive.data().containsXmlTag("int", `key="1" id="7"`, "3"));
+	}
+}
+
+@describe("deserialize object")
+{
+	@it("should return a deserialized object equal to the original object") unittest
+	{
+	    beforeEach();
+
+		auto aDeserialized = serializer.deserialize!(A)(archive.untypedData);
+		assert(a == aDeserialized);
+	}
 }
