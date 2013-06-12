@@ -75,19 +75,19 @@ static:
 	}
 
 	/// Returns true if the attributes are empty.
-	bool isEmpty ()
+	@property bool isEmpty ()
 	{
 		return length == 0;
 	}
 
 	/// Returns the length of the attributes.
-	size_t length ()
+	@property size_t length ()
 	{
 		return Attrs.length;
 	}
 
 	/// Returns true if there are any attributes.
-	bool any ()
+	@property bool any ()
 	{
 		return !isEmpty;
 	}

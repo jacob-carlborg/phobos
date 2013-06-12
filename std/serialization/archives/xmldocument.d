@@ -122,7 +122,7 @@ final class XmlDocument
 	     *
 	     * Returns: an invalid node
 	     */
-	    public static Node invalid ()
+	    @property public static Node invalid ()
 	    {
 	    	return Node(null);
 	    }
@@ -323,7 +323,7 @@ final class XmlDocument
 		}
 
 		/// Returns an array of all the nodes stored in the receiver.
-		Node[] nodes ()
+		@property Node[] nodes ()
 		{
 			return nodes_;
 		}
