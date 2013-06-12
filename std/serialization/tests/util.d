@@ -6,13 +6,21 @@
  */
 module std.serialization.tests.util;
 
-version (unittest):
-private:
-
-version (unittest):
+package:
 
 import std.algorithm;
 import std.array;
+import std.serialization.attribute;
+
+@attribute struct desc
+{
+    string description;
+}
+
+@attribute struct it
+{
+    string description;
+}
 
 bool contains (T) (T[] arr, T[] pattern)
 {
