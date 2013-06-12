@@ -12,6 +12,7 @@ private:
 import std.serialization.serializer;
 import std.serialization.archives.xmlarchive;
 import std.serialization.tests.util;
+import std.traits;
 
 Serializer serializer;
 XmlArchive!(char) archive;
@@ -52,7 +53,7 @@ unittest
 		it("should return serialized slices") in {
 
 			assert(archive.data().containsDefaultXmlContent());
-			assert(archive.data().containsXmlTag("object", `runtimeType="tests.Slice.J" type="tests.Slice.J" key="0" id="0"`));
+			assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(J).toString() ~ `" type="` ~ fullyQualifiedName!(J) ~ `" key="0" id="0"`));
 			assert(archive.data().containsXmlTag("array", `type="int" length="10" key="firstSource" id="1"`));
 
 			assert(archive.data().containsXmlTag("int", `key="0" id="2"`, "0"));
