@@ -1262,7 +1262,8 @@ class Serializer
             return value;
         }
 
-        return T.init;
+        else
+            return T.init;
     }
 
     private T deserializeStruct (T, U) (U key)
@@ -1531,33 +1532,36 @@ class Serializer
                 continue;
             }
 
-            alias typeof(T.tupleof[i]) Type;
-
-            auto v = value.tupleof[i];
-            auto id = nextId();
-
-            static if (isPointer!(Type))
-                auto pointer = v;
-
-            else
-                auto pointer = &value.tupleof[i];
-
-            auto reference = getSerializedReference(v);
-
-            if (reference != Id.max)
-                archive.archiveReference(field, reference);
-
             else
             {
-                auto valueMeta = getSerializedValue(pointer);
+                alias typeof(T.tupleof[i]) Type;
 
-                if (valueMeta.isValid)
-                    serializePointer(pointer, toData(field), id);
+                auto v = value.tupleof[i];
+                auto id = nextId();
+
+                static if (isPointer!(Type))
+                    auto pointer = v;
+
+                else
+                    auto pointer = &value.tupleof[i];
+
+                auto reference = getSerializedReference(v);
+
+                if (reference != Id.max)
+                    archive.archiveReference(field, reference);
 
                 else
                 {
-                    serializeInternal(v, toData(field), id);
-                    addSerializedValue(pointer, id, toData(keyCounter));
+                    auto valueMeta = getSerializedValue(pointer);
+
+                    if (valueMeta.isValid)
+                        serializePointer(pointer, toData(field), id);
+
+                    else
+                    {
+                        serializeInternal(v, toData(field), id);
+                        addSerializedValue(pointer, id, toData(keyCounter));
+                    }
                 }
             }
         }
@@ -1590,43 +1594,46 @@ class Serializer
                 continue;
             }
 
-            alias TypeOfField!(T, field) QualifiedType;
-            alias Unqual!(QualifiedType) Type;
-
-            auto id = deserializeReference(field);
-            auto isReference = id != Id.max;
-            auto offset = value.tupleof[i].offsetof;
-            auto fieldAddress = cast(Type*) (rawObject + offset);
-
-            static if (isPointer!(Type))
-            {
-                auto pointer = deserializePointer!(Type)(toData(field));
-                Type pointerValue;
-
-                if (pointer.hasPointee)
-                    pointerValue = getDeserializedValue!(Type)(pointer.pointee);
-
-                else
-                    pointerValue = pointer.value;
-
-                *fieldAddress = pointerValue;
-                addDeserializedPointer(value.tupleof[i], pointer.id);
-            }
-
             else
             {
-                auto pointer = getDeserializedPointer!(Type*)(id);
+                alias TypeOfField!(T, field) QualifiedType;
+                alias Unqual!(QualifiedType) Type;
 
-                if (isReference && pointer)
+                auto id = deserializeReference(field);
+                auto isReference = id != Id.max;
+                auto offset = value.tupleof[i].offsetof;
+                auto fieldAddress = cast(Type*) (rawObject + offset);
+
+                static if (isPointer!(Type))
                 {
-                    *fieldAddress = **pointer;
-                    *pointer = cast(Type*) &value.tupleof[i];
+                    auto pointer = deserializePointer!(Type)(toData(field));
+                    Type pointerValue;
+
+                    if (pointer.hasPointee)
+                        pointerValue = getDeserializedValue!(Type)(pointer.pointee);
+
+                    else
+                        pointerValue = pointer.value;
+
+                    *fieldAddress = pointerValue;
+                    addDeserializedPointer(value.tupleof[i], pointer.id);
                 }
 
                 else
                 {
-                       *fieldAddress = deserializeInternal!(Type)(toData(field));
-                    addDeserializedValue(value.tupleof[i], nextId());
+                    auto pointer = getDeserializedPointer!(Type*)(id);
+
+                    if (isReference && pointer)
+                    {
+                        *fieldAddress = **pointer;
+                        *pointer = cast(Type*) &value.tupleof[i];
+                    }
+
+                    else
+                    {
+                           *fieldAddress = deserializeInternal!(Type)(toData(field));
+                        addDeserializedValue(value.tupleof[i], nextId());
+                    }
                 }
             }
         }
