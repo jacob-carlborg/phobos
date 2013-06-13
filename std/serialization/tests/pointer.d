@@ -42,7 +42,7 @@ int outOfOrderPointee;
 void beforeEach ()
 {
     archive = new XmlArchive!(char);
-    serializer = new Serializer(archive);    
+    serializer = new Serializer(archive);
 }
 
 void before ()

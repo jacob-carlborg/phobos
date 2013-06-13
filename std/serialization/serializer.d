@@ -3,9 +3,9 @@
  * Authors: Jacob Carlborg
  * Version: Initial created: Jan 26, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
- * 
+ *
  * Source: $(PHOBOSSRC std/serialization/_serializer.d)
- * 
+ *
  * Macros:
  *  XREF3 = <a href="std_$1_$2.html#$3">$(D std.$1.$2.$3)</a>
  *  XREF4 = <a href="std_$1_$2_$3.html#$4">$(D std.$1.$2.$3.$4)</a>
@@ -445,7 +445,7 @@ class Serializer
      *
      * serializer.overrideSerializer!(Foo)(overrideDg);
      * ---
-     * 
+     *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerSerializer)
      * See_Also: $(XREF Serializable, toData)
@@ -485,7 +485,7 @@ class Serializer
      *
      * serializer.overrideSerializer!(Foo)(&overrideFunc);
      * ---
-     * 
+     *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerSerializer)
      * See_Also: $(XREF Serializable, toData)
@@ -525,7 +525,7 @@ class Serializer
      *
      * serializer.overrideSerializer!(Foo)(overrideDg);
      * ---
-     * 
+     *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerDeserializer)
      * See_Also: $(XREF Serializable, fromData)
@@ -565,7 +565,7 @@ class Serializer
      *
      * serializer.overrideSerializer!(Foo)(&overrideFunc);
      * ---
-     * 
+     *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerDeserializer)
      * See_Also: $(XREF3 serialization, Serializable, fromData)
@@ -577,9 +577,9 @@ class Serializer
 
     /**
      * Returns the receivers archive.
-     * 
+     *
      * See_Also: $(XREF4 serialization, archives, archive, Archive)
-     */ 
+     */
     @property Archive archive ()
     {
         return archive_;
@@ -634,7 +634,7 @@ class Serializer
      *
      * All internal data is reset, including the archive. After calling this method the
      * serializer can be used to start a completely new (de)serialization process.
-     * 
+     *
      * See_Also: $(XREF4 serialization, archives, archive, reset)
      */
     void reset ()
@@ -684,7 +684,7 @@ class Serializer
      *
      * Throws: $(XREF3 serialization, serializationexception, SerializationException)
      *         if an error occurs
-     * 
+     *
      * See_Also: $(LREF deserialize)
      */
     Data serialize (T) (T value, string key = null)
@@ -725,7 +725,7 @@ class Serializer
      *
      * Throws: $(XREF3 serialization, serializationexception, SerializationException)
      *         if an error occurs
-     * 
+     *
      * See_Also: $(LREF serialize)
      */
     void serializeBase (T) (T value)
@@ -1012,7 +1012,7 @@ class Serializer
      *
      * Throws: $(XREF3 serialization, serializationexception, SerializationException)
      *         if an error occurs
-     * 
+     *
      * See_Also: $(LREF serialize)
      */
     T deserialize (T) (Data data, string key = "")
@@ -1067,7 +1067,7 @@ class Serializer
      *
      * Throws: $(XREF3 serialization, serializationexception, SerializationException)
      *         if an error occurs
-     * 
+     *
      * See_Also: $(LREF deserialize)
      */
     T deserialize (T) (string key)
@@ -1112,7 +1112,7 @@ class Serializer
      *
      * Throws: $(XREF3 serialization, serializationexception, SerializationException)
      *         if an error occurs
-     * 
+     *
      * See_Also: $(LREF deserialize)
      */
     T deserialize (T) ()
@@ -1146,7 +1146,7 @@ class Serializer
      *
      * Throws: $(XREF3 serialization, serializationexception, SerializationException)
      *         if an error occurs
-     * 
+     *
      * See_Also: $(LREF deserialize)
      */
     void deserializeBase (T) (T value)
