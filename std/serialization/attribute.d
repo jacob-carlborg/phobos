@@ -26,11 +26,11 @@ struct attribute { }
  */
 template isAttribute (alias symbol)
 {
-	static if (isSymbol!(symbol))
-		enum isAttribute = getAttributes!(symbol, true).contains!(attribute);
+    static if (isSymbol!(symbol))
+        enum isAttribute = getAttributes!(symbol, true).contains!(attribute);
 
-	else
-		enum isAttribute = false;
+    else
+        enum isAttribute = false;
 }
 
 /**
@@ -40,25 +40,25 @@ template isAttribute (alias symbol)
  * Params:
  *     symbol = the symbol to return the attributes for
  *     includeNonAttributes = if true, will return all values. Included those not considered
- * 							   attributes
+ *                                attributes
  */
 template getAttributes (alias symbol, bool includeNonAttributes = false)
 {
-	static if (!__traits(compiles, __traits(getAttributes, symbol)))
-		alias Attributes!(symbol, TypeTuple!()) getAttributes;
+    static if (!__traits(compiles, __traits(getAttributes, symbol)))
+        alias Attributes!(symbol, TypeTuple!()) getAttributes;
 
-	else
-	{
-		alias TypeTuple!(__traits(getAttributes, symbol)) Attrs;
+    else
+    {
+        alias TypeTuple!(__traits(getAttributes, symbol)) Attrs;
 
-		static if (includeNonAttributes)
-			alias Attrs FilteredAttrs;
+        static if (includeNonAttributes)
+            alias Attrs FilteredAttrs;
 
-		else
-			alias Filter!(isAttribute, Attrs) FilteredAttrs;
+        else
+            alias Filter!(isAttribute, Attrs) FilteredAttrs;
 
-		alias Attributes!(symbol, FilteredAttrs) getAttributes;
-	}
+        alias Attributes!(symbol, FilteredAttrs) getAttributes;
+    }
 }
 
 /// This struct represent a tuple of attributes attached to the symbol.
@@ -67,32 +67,32 @@ struct Attributes (alias sym, Attrs ...)
 
 static:
 
-	/// The symbol these attributes originated from
-	alias sym symbol;
+    /// The symbol these attributes originated from
+    alias sym symbol;
 
-	/// Returns true if these attributes contain the given symbol
-	@property bool contains (alias symbol) ()
-	{
-		return any ? staticIndexOf!(symbol, Attrs) != -1 : false;
-	}
+    /// Returns true if these attributes contain the given symbol
+    @property bool contains (alias symbol) ()
+    {
+        return any ? staticIndexOf!(symbol, Attrs) != -1 : false;
+    }
 
-	/// Returns true if the attributes are empty.
-	@property bool isEmpty ()
-	{
-		return length == 0;
-	}
+    /// Returns true if the attributes are empty.
+    @property bool isEmpty ()
+    {
+        return length == 0;
+    }
 
-	/// Returns the length of the attributes.
-	@property size_t length ()
-	{
-		return Attrs.length;
-	}
+    /// Returns the length of the attributes.
+    @property size_t length ()
+    {
+        return Attrs.length;
+    }
 
-	/// Returns true if there are any attributes.
-	@property bool any ()
-	{
-		return !isEmpty;
-	}
+    /// Returns true if there are any attributes.
+    @property bool any ()
+    {
+        return !isEmpty;
+    }
 }
 
 private:
@@ -100,5 +100,5 @@ private:
 // Evaluates to true if the given argument is a symbol.
 template isSymbol (alias arg)
 {
-	enum isSymbol = __traits(compiles, __traits(getAttributes, arg));
+    enum isSymbol = __traits(compiles, __traits(getAttributes, arg));
 }

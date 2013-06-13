@@ -19,8 +19,8 @@ XmlArchive!(char) archive;
 
 class G
 {
-	int a;
-	enum int someConstant = 4 * 1024;
+    int a;
+    enum int someConstant = 4 * 1024;
 }
 
 G g;
@@ -28,31 +28,31 @@ G g;
 void beforeEach ()
 {
     archive = new XmlArchive!(char);
-	serializer = new Serializer(archive);
+    serializer = new Serializer(archive);
 
-	g = new G;
-	g.a = 123;
+    g = new G;
+    g.a = 123;
 
-	serializer.serialize(g);	
+    serializer.serialize(g);    
 }
 
 @describe("serialize enum")
 {
-	@it("shouldn't fail to compile when there is a constant enum member") unittest
-	{
+    @it("shouldn't fail to compile when there is a constant enum member") unittest
+    {
         beforeEach();
 
-		assert(archive.data().containsDefaultXmlContent());
-		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(G).toString() ~ `" type="` ~ fullyQualifiedName!(G) ~ `" key="0" id="0"`));
-		assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "123"));
-	}
+        assert(archive.data().containsDefaultXmlContent());
+        assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(G).toString() ~ `" type="` ~ fullyQualifiedName!(G) ~ `" key="0" id="0"`));
+        assert(archive.data().containsXmlTag("int", `key="a" id="1"`, "123"));
+    }
 }
 
 @describe("deserialize enum")
 {
-	@it("shouldn't fail to deserialize when there is a constant enum member") unittest
-	{
-		auto gDeserialized = serializer.deserialize!(G)(archive.untypedData);
-		assert(g.a == gDeserialized.a);
-	}
+    @it("shouldn't fail to deserialize when there is a constant enum member") unittest
+    {
+        auto gDeserialized = serializer.deserialize!(G)(archive.untypedData);
+        assert(g.a == gDeserialized.a);
+    }
 }

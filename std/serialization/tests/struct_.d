@@ -19,10 +19,10 @@ XmlArchive!(char) archive;
 
 struct B
 {
-	bool opEquals (ref const B) const
-	{
-		return true;
-	}
+    bool opEquals (ref const B) const
+    {
+        return true;
+    }
 }
 
 B b;
@@ -30,29 +30,29 @@ B b;
 void beforeEach ()
 {
     archive = new XmlArchive!(char);
-	serializer = new Serializer(archive);
+    serializer = new Serializer(archive);
 
     serializer.serialize(B());
 }
 
 @describe("serialize struct")
 {
-	@it("should return a serialized struct") unittest
-	{
-		beforeEach();
+    @it("should return a serialized struct") unittest
+    {
+        beforeEach();
 
-		assert(archive.data().containsDefaultXmlContent());
-		assert(archive.data().containsXmlTag("struct", `type="` ~ fullyQualifiedName!(B) ~ `" key="0" id="0"`, true));
-	}
+        assert(archive.data().containsDefaultXmlContent());
+        assert(archive.data().containsXmlTag("struct", `type="` ~ fullyQualifiedName!(B) ~ `" key="0" id="0"`, true));
+    }
 }
 
 @describe("deserialize struct")
 {
-	@it("should return a deserialized struct equal to the original struct") unittest
-	{
-	    beforeEach();
+    @it("should return a deserialized struct equal to the original struct") unittest
+    {
+        beforeEach();
 
-		auto bDeserialized = serializer.deserialize!(B)(archive.untypedData);
-		assert(b == bDeserialized);
-	}
+        auto bDeserialized = serializer.deserialize!(B)(archive.untypedData);
+        assert(b == bDeserialized);
+    }
 }

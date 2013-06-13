@@ -19,20 +19,20 @@ XmlArchive!(char) archive;
 
 class Foo
 {
-	int a;
-	int b;
+    int a;
+    int b;
 
-	void toData (Serializer serializer, Serializer.Data key)
-	{
-		i++;
-		serializer.serialize(a, "x");
-	}
+    void toData (Serializer serializer, Serializer.Data key)
+    {
+        i++;
+        serializer.serialize(a, "x");
+    }
 
-	void fromData (Serializer serializer, Serializer.Data key)
-	{
-		i++;
-		a = serializer.deserialize!(int)("x");
-	}
+    void fromData (Serializer serializer, Serializer.Data key)
+    {
+        i++;
+        a = serializer.deserialize!(int)("x");
+    }
 }
 
 Foo foo;
@@ -41,40 +41,40 @@ int i;
 void beforeEach ()
 {
     archive = new XmlArchive!(char);
-	serializer = new Serializer(archive);
+    serializer = new Serializer(archive);
 
-	foo = new Foo;
-	foo.a = 3;
-	foo.b = 4;
-	i = 3;
+    foo = new Foo;
+    foo.a = 3;
+    foo.b = 4;
+    i = 3;
 
     serializer.serialize(foo);
 }
 
 @describe("serialize object using custom serialization methods")
 {
-	@it("should return a custom serialized object") unittest
-	{
-	    beforeEach();
+    @it("should return a custom serialized object") unittest
+    {
+        beforeEach();
 
-		assert(archive.data().containsDefaultXmlContent());
-		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Foo).toString() ~ `" type="` ~ fullyQualifiedName!(Foo) ~ `" key="0" id="0"`));
-		assert(archive.data().containsXmlTag("int", `key="x" id="1"`));
+        assert(archive.data().containsDefaultXmlContent());
+        assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Foo).toString() ~ `" type="` ~ fullyQualifiedName!(Foo) ~ `" key="0" id="0"`));
+        assert(archive.data().containsXmlTag("int", `key="x" id="1"`));
 
-		assert(i == 4);
-	}
+        assert(i == 4);
+    }
 }
 
 @describe("deserialize object using custom serialization methods")
 {
-	@it("short return a custom deserialized object equal to the original object") unittest
-	{
-	    beforeEach();
+    @it("short return a custom deserialized object equal to the original object") unittest
+    {
+        beforeEach();
 
-		auto f = serializer.deserialize!(Foo)(archive.untypedData);
+        auto f = serializer.deserialize!(Foo)(archive.untypedData);
 
-		assert(foo.a == f.a);
+        assert(foo.a == f.a);
 
-		assert(i == 5);
-	}
+        assert(i == 5);
+    }
 }
