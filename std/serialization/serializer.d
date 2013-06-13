@@ -5,6 +5,10 @@
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
  * 
  * Source: $(PHOBOSSRC std/serialization/_serializer.d)
+ * 
+ * Macros:
+ *  XREF3 = <a href="std_$1_$2.html#$3">$(D std.$1.$2.$3)</a>
+ *  XREF4 = <a href="std_$1_$2_$3.html#$4">$(D std.$1.$2.$3.$4)</a>
  */
 module std.serialization.serializer;
 
@@ -237,8 +241,8 @@ class Serializer
 	 * serializer.serialize(b);
 	 * ---
 	 *
-	 * See_Also: registerSerializer
-	 * See_Also: registerDeserializer
+	 * See_Also: $(LREF registerSerializer)
+	 * See_Also: $(LREF registerDeserializer)
 	 */
 	@property static void register (T : Object) ()
 	{
@@ -267,7 +271,7 @@ class Serializer
 	 * Registers a serializer for the given type.
 	 *
 	 * The given callback will be called when a value of the given type is about to
-	 * be serialized. This method can be used as an alternative to $(I register). This
+	 * be serialized. This method can be used as an alternative to $(LREF register). This
 	 * method can also be used as an alternative to Serializable.toData.
 	 *
 	 * This is method should also be used to perform custom serialization of third party
@@ -291,9 +295,9 @@ class Serializer
 	 * Serializer.registerSerializer!(Foo)(dg);
 	 * ---
 	 *
-	 * See_Also: register
-	 * See_Also: registerDeserializer
-	 * See_Also: Serializable.toData
+	 * See_Also: $(LREF register)
+	 * See_Also: $(LREF registerDeserializer)
+	 * See_Also: $(XREF Serializable, toData)
 	 */
 	static void registerSerializer (Derived, Base) (void delegate (Base, Serializer, Data) dg)
 	{
@@ -304,7 +308,7 @@ class Serializer
 	 * Registers a serializer for the given type.
 	 *
 	 * The given callback will be called when a value of the given type is about to
-	 * be serialized. This method can be used as an alternative to $(I register). This
+	 * be serialized. This method can be used as an alternative to $(LREF register). This
 	 * method can also be used as an alternative to Serializable.toData.
 	 *
 	 * This is method should also be used to perform custom serialization of third party
@@ -328,9 +332,9 @@ class Serializer
 	 * Serializer.registerSerializer!(Foo)(&func);
 	 * ---
 	 *
-	 * See_Also: register
-	 * See_Also: registerDeserializer
-	 * See_Also: Serializable.toData
+	 * See_Also: $(LREF register)
+	 * See_Also: $(LREF registerDeserializer)
+	 * See_Also: $(XREF Serializable, toData)
 	 */
 	static void registerSerializer (Derived, Base) (void function (Base, Serializer, Data) func)
 	{
@@ -341,7 +345,7 @@ class Serializer
 	 * Registers a deserializer for the given type.
 	 *
 	 * The given callback will be called when a value of the given type is about to
-	 * be deserialized. This method can be used as an alternative to $(I register). This
+	 * be deserialized. This method can be used as an alternative to $(LREF register). This
 	 * method can also be used as an alternative to Serializable.fromData.
 	 *
 	 * This is method should also be used to perform custom deserialization of third party
@@ -365,9 +369,9 @@ class Serializer
 	 * Serializer.registerDeserializer!(Foo)(dg);
 	 * ---
 	 *
-	 * See_Also: register
-	 * See_Also: registerSerializer
-	 * See_Also: Serializable.fromData
+	 * See_Also: $(LREF register)
+	 * See_Also: $(LREF registerSerializer)
+	 * See_Also: $(XREF Serializable, fromData)
 	 */
 	static void registerDeserializer (Derived, Base) (void delegate (ref Base, Serializer, Data) dg)
 	{
@@ -402,9 +406,9 @@ class Serializer
 	 * Serializer.registerDeserializer!(Foo)(&func);
 	 * ---
 	 *
-	 * See_Also: register
-	 * See_Also: registerSerializer
-	 * See_Also: Serializable.fromData
+	 * See_Also: $(LREF register)
+	 * See_Also: $(LREF registerSerializer)
+	 * See_Also: $(XREF Serializable, fromData)
 	 */
 	static void registerDeserializer (Derived, Base) (void function (ref Base, Serializer, Data) func)
 	{
@@ -441,6 +445,10 @@ class Serializer
 	 *
 	 * serializer.overrideSerializer!(Foo)(overrideDg);
 	 * ---
+	 * 
+	 * See_Also: $(LREF register)
+	 * See_Also: $(LREF registerSerializer)
+	 * See_Also: $(XREF Serializable, toData)
 	 */
 	void overrideSerializer (Derived, Base) (void delegate (Base, Serializer, Data) dg)
 	{
@@ -477,6 +485,10 @@ class Serializer
 	 *
 	 * serializer.overrideSerializer!(Foo)(&overrideFunc);
 	 * ---
+	 * 
+	 * See_Also: $(LREF register)
+	 * See_Also: $(LREF registerSerializer)
+	 * See_Also: $(XREF Serializable, toData)
 	 */
 	void overrideSerializer (Derived, Base) (void function (Base, Serializer, Data) func)
 	{
@@ -513,6 +525,10 @@ class Serializer
 	 *
 	 * serializer.overrideSerializer!(Foo)(overrideDg);
 	 * ---
+	 * 
+	 * See_Also: $(LREF register)
+	 * See_Also: $(LREF registerDeserializer)
+	 * See_Also: $(XREF Serializable, fromData)
 	 */
 	void overrideDeserializer (Derived, Base) (void delegate (ref Base, Serializer, Data) dg)
 	{
@@ -549,13 +565,21 @@ class Serializer
 	 *
 	 * serializer.overrideSerializer!(Foo)(&overrideFunc);
 	 * ---
+	 * 
+	 * See_Also: $(LREF register)
+	 * See_Also: $(LREF registerDeserializer)
+	 * See_Also: $(XREF3 serialization, Serializable, fromData)
 	 */
 	void overrideDeserializer (Derived, Base) (void function (ref Base, Serializer, Data) func)
 	{
 		overriddenDeserializers[typeid(Derived).toString()] = toDeserializeRegisterWrapper(func);
 	}
 
-	/// Returns the receivers archive
+	/**
+	 * Returns the receivers archive.
+	 * 
+	 * See_Also: $(XREF4 serialization, archives, archive, Archive)
+	 */ 
 	@property Archive archive ()
 	{
 		return archive_;
@@ -564,7 +588,7 @@ class Serializer
 	/**
 	 * Set the error callback to throw when an error occurs
 	 *
-	 * See_Also: setDoNothingOnErrorCallback
+	 * See_Also: $(LREF setDoNothingOnErrorCallback)
 	 */
 	void setThrowOnErrorCallback ()
 	{
@@ -574,7 +598,7 @@ class Serializer
 	/**
 	 * Set the error callback do nothing when an error occurs
 	 *
-	 * See_Also: setThrowOnErrorCallback
+	 * See_Also: $(LREF setThrowOnErrorCallback)
 	 */
 	void setDoNothingOnErrorCallback ()
 	{
@@ -584,7 +608,7 @@ class Serializer
 	/**
 	 * Resets all registered types registered via the "register" method
 	 *
-	 * See_Also: register
+	 * See_Also: $(LREF register)
 	 */
 	static void resetRegisteredTypes ()
 	{
@@ -592,11 +616,12 @@ class Serializer
 	}
 
 	/**
-	 * Resets all registered (de)serializers registered via the "registerSerializer" method.
+	 * Resets all registered (de)serializers registered via the $(LREF registerSerializer) method.
 	 * This method will not reset the overridden (de)serializers.
 	 *
-	 * See_Also: registerSerializer
-	 * See_Also: registerDeserializer
+	 * See_Also: $(LREF reset)
+	 * See_Also: $(LREF registerSerializer)
+	 * See_Also: $(LREF registerDeserializer)
 	 */
 	static void resetSerializers ()
 	{
@@ -609,6 +634,8 @@ class Serializer
 	 *
 	 * All internal data is reset, including the archive. After calling this method the
 	 * serializer can be used to start a completely new (de)serialization process.
+	 * 
+	 * See_Also: $(XREF4 serialization, archives, archive, reset)
 	 */
 	void reset ()
 	{
@@ -655,7 +682,10 @@ class Serializer
 	 *
 	 * Returns: return the serialized data, in an untyped format.
 	 *
-	 * Throws: SerializationException if an error occurs
+	 * Throws: $(XREF3 serialization, serializationexception, SerializationException)
+	 *         if an error occurs
+	 * 
+	 * See_Also: $(LREF deserialize)
 	 */
 	Data serialize (T) (T value, string key = null)
 	{
@@ -693,7 +723,10 @@ class Serializer
 	 * }
 	 * ---
 	 *
-	 * Throws: SerializationException if an error occurs
+	 * Throws: $(XREF3 serialization, serializationexception, SerializationException)
+	 *         if an error occurs
+	 * 
+	 * See_Also: $(LREF serialize)
 	 */
 	void serializeBase (T) (T value)
 	{
@@ -977,7 +1010,10 @@ class Serializer
 	 * Returns: the deserialized value. A different runtime type can be returned
 	 * 			if the given type is a base class.
 	 *
-	 * Throws: SerializationException if an error occurs
+	 * Throws: $(XREF3 serialization, serializationexception, SerializationException)
+	 *         if an error occurs
+	 * 
+	 * See_Also: $(LREF serialize)
 	 */
 	T deserialize (T) (Data data, string key = "")
 	{
@@ -1025,10 +1061,14 @@ class Serializer
 	 * Returns: the deserialized value. A different runtime type can be returned
 	 * 			if the given type is a base class.
 	 *
-	 * Throws: SerializationException if this method is called before
+	 * Throws: $(XREF3 serialization, serializationexception, SerializationException)
+	 *         if this method is called before
 	 * 		   the actual deserialization process has begun.
 	 *
-	 * Throws: SerializationException if an error occurs
+	 * Throws: $(XREF3 serialization, serializationexception, SerializationException)
+	 *         if an error occurs
+	 * 
+	 * See_Also: $(LREF deserialize)
 	 */
 	T deserialize (T) (string key)
 	{
@@ -1066,10 +1106,14 @@ class Serializer
 	 * Returns: the deserialized value. A different runtime type can be returned
 	 * 			if the given type is a base class.
 	 *
-	 * Throws: SerializationException if this method is called before
-	 * 		   the actual deserialization process has begun.
+	 * Throws: $(XREF3 serialization, serializationexception, SerializationException)
+	 *         if this method is called before the actual deserialization process
+	 *         has begun.
 	 *
-	 * Throws: SerializationException if an error occurs
+	 * Throws: $(XREF3 serialization, serializationexception, SerializationException)
+	 *         if an error occurs
+	 * 
+	 * See_Also: $(LREF deserialize)
 	 */
 	T deserialize (T) ()
 	{
@@ -1100,7 +1144,10 @@ class Serializer
 	 * }
 	 * ---
 	 *
-	 * Throws: SerializationException if an error occurs
+	 * Throws: $(XREF3 serialization, serializationexception, SerializationException)
+	 *         if an error occurs
+	 * 
+	 * See_Also: $(LREF deserialize)
 	 */
 	void deserializeBase (T) (T value)
 	{

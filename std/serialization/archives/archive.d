@@ -99,6 +99,8 @@ interface Archive
 	 * Params:
 	 *     exception = the exception indicating what error occurred
 	 *     data = arbitrary data pass along, deprecated
+	 * 
+	 * See_Also: $(LREF errorCallback)
 	 */
 	alias void delegate (SerializationException exception) ErrorCallback;
 
@@ -114,6 +116,8 @@ interface Archive
 	 * 	throw exception;
 	 * };
 	 * ---
+	 * 
+	 * See_Also: $(LREF ErrorCallback)
 	 */
 	@property ErrorCallback errorCallback ();
 
@@ -129,6 +133,8 @@ interface Archive
 	 * 	throw exception;
 	 * };
 	 * ---
+	 * 
+	 * See_Also: $(LREF ErrorCallback)
 	 */
 	@property ErrorCallback errorCallback (ErrorCallback errorCallback);
 
@@ -200,8 +206,8 @@ interface Archive
 	 *     id = the id associated with the associative array
 	 *     dg = a callback that performs the archiving of the individual keys and values
 	 *
-	 * See_Also: archiveAssociativeArrayValue
-	 * See_Also: archiveAssociativeArrayKey
+	 * See_Also: $(LREF archiveAssociativeArrayValue)
+	 * See_Also: $(LREF archiveAssociativeArrayKey)
 	 */
 	void archiveAssociativeArray (string keyType, string valueType, size_t length, string key, Id id, void delegate () dg);
 
@@ -233,8 +239,8 @@ interface Archive
 	 *     key = the key associated with the key
 	 *     dg = a callback that performs the actual archiving of the key
 	 *
-	 * See_Also: archiveAssociativeArray
-	 * See_Also: archiveAssociativeArrayValue
+	 * See_Also: $(LREF archiveAssociativeArray)
+	 * See_Also: $(LREF archiveAssociativeArrayValue)
 	 */
 	void archiveAssociativeArrayKey (string key, void delegate () dg);
 
@@ -269,8 +275,8 @@ interface Archive
 	 *     key = the key associated with the value
 	 *     dg = a callback that performs the actual archiving of the value
 	 *
-	 * See_Also: archiveAssociativeArray
-	 * See_Also: archiveAssociativeArrayKey
+	 * See_Also: $(LREF archiveAssociativeArray)
+	 * See_Also: $(LREF archiveAssociativeArrayKey)
 	 */
 	void archiveAssociativeArrayValue (string key, void delegate () dg);
 
@@ -338,8 +344,8 @@ interface Archive
 	 *
 	 * This method is used to indicate that the all following calls to archive a value
 	 * should be part of the base class. This method is usually called within the
-	 * callback passed to archiveObject. The archiveObject method can the mark the end
-	 * of the class.
+	 * callback passed to $(LREF archiveObject). The $(LREF archiveObject)
+	 * method can the mark the end of the class.
 	 *
 	 * Examples:
 	 * ---
@@ -354,6 +360,8 @@ interface Archive
 	 *     type = the type of the base class to archive
 	 *     key = the key associated with the base class
 	 *     id = the id associated with the base class
+	 * 
+	 * See_Also: $(LREF archiveObject)
 	 */
 	void archiveBaseClass (string type, string key, Id id);
 
@@ -398,6 +406,8 @@ interface Archive
 	 *     key = the key associated with the object
 	 *     id = the id associated with the object
 	 *     dg = a callback that performs the archiving of the individual fields
+	 * 
+	 * See_Also: $(LREF archiveBaseClass)
 	 */
 	void archiveObject (string runtimeType, string type, string key, Id id, void delegate () dg);
 
@@ -663,7 +673,7 @@ interface Archive
 	 *
 	 * Returns: the id associated with the array
 	 *
-	 * See_Also: unarchiveArray
+	 * See_Also: $(LREF unarchiveArray)
 	 */
 	Id unarchiveArray (string key, void delegate (size_t length) dg);
 
@@ -685,7 +695,7 @@ interface Archive
 	 *     dg = a callback that performs the unarchiving of the individual elements.
 	 *     		$(I length) is the length of the archived array
 	 *
-	 * See_Also: unarchiveArray
+	 * See_Also: $(LREF unarchiveArray)
 	 */
 	void unarchiveArray (Id id, void delegate (size_t length) dg);
 
@@ -709,8 +719,8 @@ interface Archive
 	 *
 	 * Returns: the id associated with the associative array
 	 *
-	 * See_Also: unarchiveAssociativeArrayKey
-	 * See_Also: unarchiveAssociativeArrayValue
+	 * See_Also: $(LREF unarchiveAssociativeArrayKey)
+	 * See_Also: $(LREF unarchiveAssociativeArrayValue)
 	 */
 	Id unarchiveAssociativeArray (string key, void delegate (size_t length) dg);
 
@@ -741,8 +751,8 @@ interface Archive
 	 *     key = the key associated with the key
 	 *     dg = a callback that performs the actual unarchiving of the key
 	 *
-	 * See_Also: unarchiveAssociativeArrayValue
-	 * See_Also: unarchiveAssociativeArray
+	 * See_Also: $(LREF unarchiveAssociativeArrayValue)
+	 * See_Also: $(LREF unarchiveAssociativeArray)
 	 */
 	void unarchiveAssociativeArrayKey (string key, void delegate () dg);
 
@@ -773,8 +783,8 @@ interface Archive
 	 *     key = the key associated with the value
 	 *     dg = a callback that performs the actual unarchiving of the value
 	 *
-	 * See_Also: unarchiveAssociativeArrayKey
-	 * See_Also: unarchiveAssociativeArray
+	 * See_Also: $LREF(unarchiveAssociativeArrayKey)
+	 * See_Also: $LREF(unarchiveAssociativeArray)
 	 */
 	void unarchiveAssociativeArrayValue (string key, void delegate () dg);
 
@@ -886,7 +896,7 @@ interface Archive
 	 * Params:
 	 *     key = the key associated with the base class.
 	 *
-	 * See_Also: unarchiveObject
+	 * See_Also: $(LREF unarchiveObject)
 	 */
 	void unarchiveBaseClass (string key);
 
@@ -918,6 +928,8 @@ interface Archive
 	 *     id = the id associated with the object
 	 *     result = the unarchived object
 	 *     dg = a callback the performs the unarchiving of the individual fields
+	 * 
+	 * See_Also: $(unarchiveBaseClass)
 	 */
 	void unarchiveObject (string key, out Id id, out Object result, void delegate () dg);
 
@@ -1340,8 +1352,8 @@ abstract class ArchiveBase (U) : Archive
 	 * Returns: the converted value
 	 *
 	 * Throws: SerializationException if the conversion failed
-	 * See_Also: fromData
-	 * See_Also: floatingPointToData
+	 * See_Also: $(LREF fromData)
+	 * See_Also: $(LREF floatingPointToData)
 	 */
 	protected Data toData (T) (T value)
 	{
@@ -1376,7 +1388,7 @@ abstract class ArchiveBase (U) : Archive
 	 * Returns: the converted value
 	 *
 	 * Throws: SerializationException if the conversion failed
-	 * See_Also: toData
+	 * See_Also: $(LREF toData)
 	 */
 	protected T fromData (T) (Data value)
 	{
@@ -1435,7 +1447,7 @@ abstract class ArchiveBase (U) : Archive
 	 * Returns: the converted id
 	 *
 	 * Throws: SerializationException if the converted failed
-	 * See_Also: fromData
+	 * See_Also: $(LREF fromData)
 	 */
 	protected Id toId (Data value)
 	{
