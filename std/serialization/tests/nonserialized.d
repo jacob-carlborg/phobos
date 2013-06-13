@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (c) 2011 Jacob Carlborg. All rights reserved.
+ * Copyright: Copyright (c) 2011-2013 Jacob Carlborg. All rights reserved.
  * Authors: Jacob Carlborg
  * Version: Initial created: Aug 20, 2011
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
