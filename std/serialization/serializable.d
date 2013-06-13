@@ -28,16 +28,16 @@ import std.serialization.serializer;
  * ---
  * class Foo : Serializable
  * {
- * 	int a;
+ *     int a;
  *
- * 	void toData (Serializer serializer, Serializer.Data key)
- * 	{
- * 		serializer.serialize(a, "b");
- * 	}
+ *     void toData (Serializer serializer, Serializer.Data key)
+ *     {
+ *         serializer.serialize(a, "b");
+ *     }
  *
  *  void fromData (Serializer serializer, Serializer.Data key)
  *  {
- *  	a = serializer.deserialize!(int)("b");
+ *      a = serializer.deserialize!(int)("b");
  *  }
  * }
  * ---
@@ -46,27 +46,27 @@ import std.serialization.serializer;
  */
 interface Serializable
 {
-	/**
-	 * Called by the given serializer when performing custom serialization.
-	 *
-	 * Params:
-	 *     serializer = the serializer that performs the serialization
-	 *     key = the key of the receiver
-	 * 
-	 * See_Also: $(LREF fromData)
-	 */
-	void toData (Serializer serializer, Serializer.Data key);
+    /**
+     * Called by the given serializer when performing custom serialization.
+     *
+     * Params:
+     *     serializer = the serializer that performs the serialization
+     *     key = the key of the receiver
+     * 
+     * See_Also: $(LREF fromData)
+     */
+    void toData (Serializer serializer, Serializer.Data key);
 
-	/**
-	 * Called by the given serializer when performing custom deserialization.
-	 *
-	 * Params:
-	 *     serializer = the serializer that performs the deserialization
-	 *     key = the key of the receiver
-	 * 
-	 * See_Also: $(LREF toData)
-	 */
-	void fromData (Serializer serializer, Serializer.Data key);
+    /**
+     * Called by the given serializer when performing custom deserialization.
+     *
+     * Params:
+     *     serializer = the serializer that performs the deserialization
+     *     key = the key of the receiver
+     * 
+     * See_Also: $(LREF toData)
+     */
+    void fromData (Serializer serializer, Serializer.Data key);
 }
 
 /**
@@ -80,16 +80,16 @@ interface Serializable
  * ---
  * struct Foo
  * {
- * 	int a;
+ *     int a;
  *
- * 	void toData (Serializer serializer, Serializer.Data key)
- * 	{
- * 		serializer.serialize(a, "b");
- * 	}
+ *     void toData (Serializer serializer, Serializer.Data key)
+ *     {
+ *         serializer.serialize(a, "b");
+ *     }
  *
  *  void fromData (Serializer serializer, Serializer.Data key)
  *  {
- *  	a = serializer.deserialize!(int)("b");
+ *      a = serializer.deserialize!(int)("b");
  *  }
  * }
  *
@@ -100,9 +100,9 @@ interface Serializable
  */
 template isSerializable (T)
 {
-	enum isSerializable = is(T : Serializable) || (
-		is(typeof(T.toData(Serializer.init, Serializer.Data.init))) &&
-		is(typeof(T.fromData(Serializer.init, Serializer.Data.init))));
+    enum isSerializable = is(T : Serializable) || (
+        is(typeof(T.toData(Serializer.init, Serializer.Data.init))) &&
+        is(typeof(T.fromData(Serializer.init, Serializer.Data.init))));
 }
 
 /**
@@ -116,18 +116,18 @@ template isSerializable (T)
  * ---
  * class Foo
  * {
- * 	int a;
- * 	int b;
+ *     int a;
+ *     int b;
  *
- * 	mixin NonSerialized!(b); // "b" will not be (de)serialized
+ *     mixin NonSerialized!(b); // "b" will not be (de)serialized
  * }
  *
  * struct Bar
  * {
- * 	int a;
- * 	int b;
+ *     int a;
+ *     int b;
  *
- * 	mixin NonSerialized; // "Bar" will not be (de)serialized
+ *     mixin NonSerialized; // "Bar" will not be (de)serialized
  * }
  * ---
  * 
@@ -135,11 +135,11 @@ template isSerializable (T)
  */
 template NonSerialized (Fields ...)
 {
-	static if (Fields.length == 0)
-		static enum __nonSerialized = ["this"[]];
+    static if (Fields.length == 0)
+        static enum __nonSerialized = ["this"[]];
 
-	else
-		static enum __nonSerialized = toArray!(Fields)();
+    else
+        static enum __nonSerialized = toArray!(Fields)();
 }
 
 /**
@@ -152,7 +152,7 @@ template NonSerialized (Fields ...)
 
 struct NonSerializedField (string name)
 {
-	enum field = name;
+    enum field = name;
 }
 
 /*
@@ -173,12 +173,12 @@ struct NonSerializedField (string name)
  */
 static string[] toArray (Args ...) ()
 {
-	string[] args;
+    string[] args;
 
-	foreach (i, _ ; typeof(Args))
-		args ~= Args[i].stringof;
+    foreach (i, _ ; typeof(Args))
+        args ~= Args[i].stringof;
 
-	return args;
+    return args;
 }
 
 package:
