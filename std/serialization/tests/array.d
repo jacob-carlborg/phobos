@@ -16,7 +16,7 @@ import std.traits;
 
 class D
 {
-	int[] arr;
+    int[] arr;
 }
 
 D d;
@@ -27,10 +27,10 @@ Serializer serializer;
 void beforeEach ()
 {
     archive = new XmlArchive!(char);
-	serializer = new Serializer(archive);
+    serializer = new Serializer(archive);
 
-	d = new D;
-	d.arr = [27, 382, 283, 3820, 32, 832].dup;
+    d = new D;
+    d.arr = [27, 382, 283, 3820, 32, 832].dup;
     serializer.serialize(d);
 }
 

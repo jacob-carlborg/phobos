@@ -19,7 +19,7 @@ XmlArchive!(char) archive;
 
 class E
 {
-	int[int] aa;
+    int[int] aa;
 }
 
 E e;
@@ -27,12 +27,12 @@ E e;
 void beforeEach ()
 {
     archive = new XmlArchive!(char);
-	serializer = new Serializer(archive);
+    serializer = new Serializer(archive);
 
-	e = new E;
-	e.aa = [3 : 4, 1 : 2, 39 : 472, 6 : 7];
+    e = new E;
+    e.aa = [3 : 4, 1 : 2, 39 : 472, 6 : 7];
 
-	serializer.serialize(e);
+    serializer.serialize(e);
 }
 
 @describe("serialize associative array")
@@ -42,27 +42,27 @@ void beforeEach ()
         beforeEach();
 
         assert(archive.data().containsDefaultXmlContent());
-		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(E).toString() ~ `" type="` ~ fullyQualifiedName!(E) ~ `" key="0" id="0"`));
+        assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(E).toString() ~ `" type="` ~ fullyQualifiedName!(E) ~ `" key="0" id="0"`));
 
-		assert(archive.data().containsXmlTag("key", `key="0"`));
-		assert(archive.data().containsXmlTag("int", `key="0" id="2"`, "1"));
-		assert(archive.data().containsXmlTag("value", `key="0"`));
-		assert(archive.data().containsXmlTag("int", `key="0" id="3"`, "2"));
+        assert(archive.data().containsXmlTag("key", `key="0"`));
+        assert(archive.data().containsXmlTag("int", `key="0" id="2"`, "1"));
+        assert(archive.data().containsXmlTag("value", `key="0"`));
+        assert(archive.data().containsXmlTag("int", `key="0" id="3"`, "2"));
 
-		assert(archive.data().containsXmlTag("key", `key="1"`));
-		assert(archive.data().containsXmlTag("int", `key="1" id="4"`, "3"));
-		assert(archive.data().containsXmlTag("value", `key="1"`));
-		assert(archive.data().containsXmlTag("int", `key="1" id="5"`, "4"));
+        assert(archive.data().containsXmlTag("key", `key="1"`));
+        assert(archive.data().containsXmlTag("int", `key="1" id="4"`, "3"));
+        assert(archive.data().containsXmlTag("value", `key="1"`));
+        assert(archive.data().containsXmlTag("int", `key="1" id="5"`, "4"));
 
-		assert(archive.data().containsXmlTag("key", `key="2"`));
-		assert(archive.data().containsXmlTag("int", `key="2" id="6"`, "6"));
-		assert(archive.data().containsXmlTag("value", `key="2"`));
-		assert(archive.data().containsXmlTag("int", `key="2" id="7"`, "7"));
+        assert(archive.data().containsXmlTag("key", `key="2"`));
+        assert(archive.data().containsXmlTag("int", `key="2" id="6"`, "6"));
+        assert(archive.data().containsXmlTag("value", `key="2"`));
+        assert(archive.data().containsXmlTag("int", `key="2" id="7"`, "7"));
 
-		assert(archive.data().containsXmlTag("key", `key="3"`));
-		assert(archive.data().containsXmlTag("int", `key="3" id="8"`, "39"));
-		assert(archive.data().containsXmlTag("value", `key="3"`));
-		assert(archive.data().containsXmlTag("int", `key="3" id="9"`, "472"));
+        assert(archive.data().containsXmlTag("key", `key="3"`));
+        assert(archive.data().containsXmlTag("int", `key="3" id="8"`, "39"));
+        assert(archive.data().containsXmlTag("value", `key="3"`));
+        assert(archive.data().containsXmlTag("int", `key="3" id="9"`, "472"));
     }
 }
 
@@ -74,9 +74,9 @@ void beforeEach ()
 
         auto eDeserialized = serializer.deserialize!(E)(archive.untypedData);
 
-		foreach (k, v ; eDeserialized.aa)
-			assert(e.aa[k] == v);
+        foreach (k, v ; eDeserialized.aa)
+            assert(e.aa[k] == v);
 
-		assert(e.aa == eDeserialized.aa);
+        assert(e.aa == eDeserialized.aa);
     }
 }

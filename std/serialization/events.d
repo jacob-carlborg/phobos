@@ -22,7 +22,7 @@ import std.serialization.attribute;
  */
 template OnDeserialized (alias method)
 {
-	static std.serialization.events.Event!(method) __onDeserialized;
+    static std.serialization.events.Event!(method) __onDeserialized;
 }
 
 /**
@@ -46,7 +46,7 @@ template OnDeserialized (alias method)
  */
 template OnDeserializing (alias method)
 {
-	static std.serialization.events.Event!(method) __onDeserializing;
+    static std.serialization.events.Event!(method) __onDeserializing;
 }
 
 /**
@@ -70,7 +70,7 @@ template OnDeserializing (alias method)
  */
 template OnSerialized (alias method)
 {
-	static std.serialization.events.Event!(method) __onSerialized;
+    static std.serialization.events.Event!(method) __onSerialized;
 }
 
 /**
@@ -94,7 +94,7 @@ template OnSerialized (alias method)
  */
 template OnSerializing (alias method)
 {
-	static std.serialization.events.Event!(method) __onSerializing;
+    static std.serialization.events.Event!(method) __onSerializing;
 }
 
 /**
@@ -114,21 +114,21 @@ template OnSerializing (alias method)
  */
 struct Event (alias m)
 {
-	private enum method = &m;
+    private enum method = &m;
 
-	/**
-	 * Triggers the event on the given value.
-	 *
-	 * Params:
-	 *     value = the object to trigger the event on
-	 */
-	void opCall (T) (T value)
-	{
-		void delegate () dg;
-		dg.ptr = cast(void*) value;
-		dg.funcptr = method;
-		dg();
-	}
+    /**
+     * Triggers the event on the given value.
+     *
+     * Params:
+     *     value = the object to trigger the event on
+     */
+    void opCall (T) (T value)
+    {
+        void delegate () dg;
+        dg.ptr = cast(void*) value;
+        dg.funcptr = method;
+        dg();
+    }
 }
 
 package:
