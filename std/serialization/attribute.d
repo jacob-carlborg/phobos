@@ -20,7 +20,7 @@ struct attribute { }
 
 /**
  * Evaluates to true if the given symbol is an attribute. An attribute is any declaration with
- * the "orange.core.Attribute.attribute" attribute attached.
+ * the "std.serialization.attribute.attribute" attribute attached.
  */
 template isAttribute (alias symbol)
 {
@@ -33,7 +33,7 @@ template isAttribute (alias symbol)
 
 /**
  * Returns a tuple of all attributes attached to the given symbol. By default this will only
- * include actual attributes (see orange.core.Attribute.isAttribute).
+ * include actual attributes (see std.serialization.attribute.isAttribute).
  *
  * Params:
  *     symbol = the symbol to return the attributes for

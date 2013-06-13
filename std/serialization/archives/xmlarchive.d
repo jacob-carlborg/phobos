@@ -72,7 +72,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 
 	private
 	{
-		Data archiveType = "org.dsource.orange.xml";
+		Data archiveType = "std.xml";
 		Data archiveVersion = "1.0.0";
 
 		XmlDocument doc;

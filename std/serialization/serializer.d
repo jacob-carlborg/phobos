@@ -62,8 +62,8 @@ private
  * Examples:
  * ---
  * import std.stdio;
- * import orange.serialization._;
- * import orange.serialization.archives._;
+ * import std.serialization;
+ * import std.serialization.archives;
  *
  * class Foo
  * {
