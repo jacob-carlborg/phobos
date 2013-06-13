@@ -3,7 +3,7 @@
  * Authors: Jacob Carlborg
  * Version: Initial created: Jan 26, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
- * 
+ *
  * Source: $(PHOBOSSRC std/serialization/_serializable.d)
  */
 module std.serialization.serializable;
@@ -52,7 +52,7 @@ interface Serializable
      * Params:
      *     serializer = the serializer that performs the serialization
      *     key = the key of the receiver
-     * 
+     *
      * See_Also: $(LREF fromData)
      */
     void toData (Serializer serializer, Serializer.Data key);
@@ -63,7 +63,7 @@ interface Serializable
      * Params:
      *     serializer = the serializer that performs the deserialization
      *     key = the key of the receiver
-     * 
+     *
      * See_Also: $(LREF toData)
      */
     void fromData (Serializer serializer, Serializer.Data key);
@@ -130,7 +130,7 @@ template isSerializable (T)
  *     mixin NonSerialized; // "Bar" will not be (de)serialized
  * }
  * ---
- * 
+ *
  * See_Also: $(LREF nonSerialized)
  */
 template NonSerialized (Fields ...)
@@ -145,7 +145,7 @@ template NonSerialized (Fields ...)
 /**
  * Indicates that the declaration this attribute is attached to should not be
  * (de)serialized.
- * 
+ *
  * See_Also: $(LREF NonSerialized)
  */
 @attribute struct nonSerialized { }
