@@ -19,17 +19,17 @@ XmlArchive!(char) archive;
 
 class A
 {
-	int a;
+    int a;
 
-	this (int value)
-	{
-		this.a = value;
-	}
+    this (int value)
+    {
+        this.a = value;
+    }
 }
 
 class D
 {
-	Object[] arr;
+    Object[] arr;
 }
 
 D d;
@@ -37,13 +37,13 @@ D d;
 void beforeEach ()
 {
     archive = new XmlArchive!(char);
-	serializer = new Serializer(archive);
+    serializer = new Serializer(archive);
 
-	d = new D;
-	d.arr = [cast(Object) new A(1), cast(Object) new A(2)].dup;
+    d = new D;
+    d.arr = [cast(Object) new A(1), cast(Object) new A(2)].dup;
 
-	Serializer.register!(A);
-	serializer.serialize(d);
+    Serializer.register!(A);
+    serializer.serialize(d);
 }
 
 @describe("serialize array")
@@ -53,12 +53,12 @@ void beforeEach ()
         beforeEach();
 
         assert(archive.data().containsDefaultXmlContent());
-		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(D).toString() ~ `" type="` ~ fullyQualifiedName!(D) ~ `" key="0" id="0"`));
-		assert(archive.data().containsXmlTag("array", `type="object.Object" length="2" key="arr" id="1"`));
-		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(A).toString() ~ `" type="const(object.Object)" key="0" id="2"`));
-		assert(archive.data().containsXmlTag("int", `key="a" id="3"`, "1"));
-		assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(A).toString() ~ `" type="const(object.Object)" key="1" id="4"`));
-		assert(archive.data().containsXmlTag("int", `key="a" id="5"`, "2"));
+        assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(D).toString() ~ `" type="` ~ fullyQualifiedName!(D) ~ `" key="0" id="0"`));
+        assert(archive.data().containsXmlTag("array", `type="object.Object" length="2" key="arr" id="1"`));
+        assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(A).toString() ~ `" type="const(object.Object)" key="0" id="2"`));
+        assert(archive.data().containsXmlTag("int", `key="a" id="3"`, "1"));
+        assert(archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(A).toString() ~ `" type="const(object.Object)" key="1" id="4"`));
+        assert(archive.data().containsXmlTag("int", `key="a" id="5"`, "2"));
     }
 }
 
@@ -70,10 +70,10 @@ void beforeEach ()
 
         auto dDeserialized = serializer.deserialize!(D)(archive.untypedData);
 
-		assert(d.arr.length == dDeserialized.arr.length);
-		assert((cast(A) d.arr[0]).a == (cast(A) dDeserialized.arr[0]).a);
-		assert((cast(A) d.arr[1]).a == (cast(A) dDeserialized.arr[1]).a);
+        assert(d.arr.length == dDeserialized.arr.length);
+        assert((cast(A) d.arr[0]).a == (cast(A) dDeserialized.arr[0]).a);
+        assert((cast(A) d.arr[1]).a == (cast(A) dDeserialized.arr[1]).a);
 
-		Serializer.resetRegisteredTypes();
+        Serializer.resetRegisteredTypes();
     }
 }
