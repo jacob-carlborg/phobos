@@ -33,7 +33,7 @@ void beforeEach ()
     g = new G;
     g.a = 123;
 
-    serializer.serialize(g);    
+    serializer.serialize(g);
 }
 
 @describe("serialize enum")

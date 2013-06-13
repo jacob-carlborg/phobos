@@ -3,7 +3,7 @@
  * Authors: Jacob Carlborg
  * Version: Initial created: Jun 26, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
- * 
+ *
  * Source: $(PHOBOSSRC std/serialization/archives/_xmldocument.d)
  */
 module std.serialization.archives.xmldocument;
@@ -123,7 +123,7 @@ final class XmlDocument
          * ---
          *
          * Returns: an invalid node
-         * 
+         *
          * See_Also: $(LREF isValid)
          */
         @property public static Node invalid ()

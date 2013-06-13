@@ -3,7 +3,7 @@
  * Authors: Jacob Carlborg
  * Version: Initial created: Feb 4, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
- * 
+ *
  * Source: $(PHOBOSSRC std/serialization/_registerwrapper.d)
  */
 module std.serialization.registerwrapper;

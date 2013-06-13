@@ -3,7 +3,7 @@
  * Authors: Jacob Carlborg
  * Version: Initial created: Feb 6, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
- * 
+ *
  * Source: $(PHOBOSSRC std/serialization/archives/_archive.d)
  */
 module std.serialization.archives.archive;
@@ -99,7 +99,7 @@ interface Archive
      * Params:
      *     exception = the exception indicating what error occurred
      *     data = arbitrary data pass along, deprecated
-     * 
+     *
      * See_Also: $(LREF errorCallback)
      */
     alias void delegate (SerializationException exception) ErrorCallback;
@@ -116,7 +116,7 @@ interface Archive
      *     throw exception;
      * };
      * ---
-     * 
+     *
      * See_Also: $(LREF ErrorCallback)
      */
     @property ErrorCallback errorCallback ();
@@ -133,7 +133,7 @@ interface Archive
      *     throw exception;
      * };
      * ---
-     * 
+     *
      * See_Also: $(LREF ErrorCallback)
      */
     @property ErrorCallback errorCallback (ErrorCallback errorCallback);
@@ -360,7 +360,7 @@ interface Archive
      *     type = the type of the base class to archive
      *     key = the key associated with the base class
      *     id = the id associated with the base class
-     * 
+     *
      * See_Also: $(LREF archiveObject)
      */
     void archiveBaseClass (string type, string key, Id id);
@@ -406,7 +406,7 @@ interface Archive
      *     key = the key associated with the object
      *     id = the id associated with the object
      *     dg = a callback that performs the archiving of the individual fields
-     * 
+     *
      * See_Also: $(LREF archiveBaseClass)
      */
     void archiveObject (string runtimeType, string type, string key, Id id, void delegate () dg);
@@ -928,7 +928,7 @@ interface Archive
      *     id = the id associated with the object
      *     result = the unarchived object
      *     dg = a callback the performs the unarchiving of the individual fields
-     * 
+     *
      * See_Also: $(unarchiveBaseClass)
      */
     void unarchiveObject (string key, out Id id, out Object result, void delegate () dg);
