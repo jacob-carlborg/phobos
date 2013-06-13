@@ -243,8 +243,8 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 *     id = the id associated with the associative array
 	 *     dg = a callback that performs the archiving of the individual keys and values
 	 *
-	 * See_Also: archiveAssociativeArrayValue
-	 * See_Also: archiveAssociativeArrayKey
+	 * See_Also: $(LREF archiveAssociativeArrayValue)
+	 * See_Also: $(LREF archiveAssociativeArrayKey)
 	 */
 	void archiveAssociativeArray (string keyType, string valueType, size_t length, string key, Id id, void delegate () dg)
 	{
@@ -288,8 +288,8 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 *     key = the key associated with the key
 	 *     dg = a callback that performs the actual archiving of the key
 	 *
-	 * See_Also: archiveAssociativeArray
-	 * See_Also: archiveAssociativeArrayValue
+	 * See_Also: $(LREF archiveAssociativeArray)
+	 * See_Also: $(LREF archiveAssociativeArrayValue)
 	 */
 	void archiveAssociativeArrayKey (string key, void delegate () dg)
 	{
@@ -327,8 +327,8 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 *     key = the key associated with the value
 	 *     dg = a callback that performs the actual archiving of the value
 	 *
-	 * See_Also: archiveAssociativeArray
-	 * See_Also: archiveAssociativeArrayKey
+	 * See_Also: $(LREF archiveAssociativeArray)
+	 * See_Also: $(LREF archiveAssociativeArrayKey)
 	 */
 	void archiveAssociativeArrayValue (string key, void delegate () dg)
 	{
@@ -942,7 +942,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 *
 	 * Returns: the id associated with the array
 	 *
-	 * See_Also: unarchiveArray
+	 * See_Also: $(LREF unarchiveArray)
 	 */
 	Id unarchiveArray (string key, void delegate (size_t) dg)
 	{
@@ -988,7 +988,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 *     dg = a callback that performs the unarchiving of the individual elements.
 	 *     		$(I length) is the length of the archived array
 	 *
-	 * See_Also: unarchiveArray
+	 * See_Also: $(LREF unarchiveArray)
 	 */
 	void unarchiveArray (Id id, void delegate (size_t) dg)
 	{
@@ -1034,8 +1034,8 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 *
 	 * Returns: the id associated with the associative array
 	 *
-	 * See_Also: unarchiveAssociativeArrayKey
-	 * See_Also: unarchiveAssociativeArrayValue
+	 * See_Also: $(LREF unarchiveAssociativeArrayKey)
+	 * See_Also: $(LREF unarchiveAssociativeArrayValue)
 	 */
 	Id unarchiveAssociativeArray (string key, void delegate (size_t length) dg)
 	{
@@ -1090,8 +1090,8 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 *     key = the key associated with the key
 	 *     dg = a callback that performs the actual unarchiving of the key
 	 *
-	 * See_Also: unarchiveAssociativeArrayValue
-	 * See_Also: unarchiveAssociativeArray
+	 * See_Also: $(LREF unarchiveAssociativeArrayValue)
+	 * See_Also: $(LREF unarchiveAssociativeArray)
 	 */
 	void unarchiveAssociativeArrayKey (string key, void delegate () dg)
 	{
@@ -1125,8 +1125,8 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 *     key = the key associated with the value
 	 *     dg = a callback that performs the actual unarchiving of the value
 	 *
-	 * See_Also: unarchiveAssociativeArrayKey
-	 * See_Also: unarchiveAssociativeArray
+	 * See_Also: $(LREF unarchiveAssociativeArrayKey)
+	 * See_Also: $(LREF unarchiveAssociativeArray)
 	 */
 	void unarchiveAssociativeArrayValue (string key, void delegate () dg)
 	{
@@ -1346,7 +1346,7 @@ final class XmlArchive (U = char) : ArchiveBase!(U)
 	 * Params:
 	 *     key = the key associated with the base class.
 	 *
-	 * See_Also: unarchiveObject
+	 * See_Also: $(LREF unarchiveObject)
 	 */
 	void unarchiveBaseClass (string key)
 	{

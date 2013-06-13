@@ -16,6 +16,9 @@ import std.serialization.attribute;
  *
  * Params:
  *     method = the method to be invoked when the event is triggered
+ * 
+ * See_Also: $(LREF onDeserialized)
+ * See_Also: $(LREF OnSerialized)
  */
 template OnDeserialized (alias method)
 {
@@ -25,6 +28,9 @@ template OnDeserialized (alias method)
 /**
  * Methods with this attribute attached will be called after the struct/class has been
  * deserialized.
+ * 
+ * See_Also: $(LREF OnDeserialized)
+ * See_Also: $(LREF onSerialized)
  */
 @attribute struct onDeserialized { }
 
@@ -34,6 +40,9 @@ template OnDeserialized (alias method)
  *
  * Params:
  *     method = the method to be invoked when the event is triggered
+ * 
+ * See_Also: $(LREF onDeserializing)
+ * See_Also: $(LREF OnSerializing)
  */
 template OnDeserializing (alias method)
 {
@@ -43,6 +52,9 @@ template OnDeserializing (alias method)
 /**
  * Methods with this attribute attached will be called before the struct/class has been
  * deserialized.
+ * 
+ * See_Also: $(LREF OnDeserializing)
+ * See_Also: $(LREF onSerializing)
  */
 @attribute struct onDeserializing { }
 
@@ -52,6 +64,9 @@ template OnDeserializing (alias method)
  *
  * Params:
  *     method = the method to be invoked when the event is triggered
+ * 
+ * See_Also: $(LREF onSerialized)
+ * See_Also: $(LREF OnDeserialized)
  */
 template OnSerialized (alias method)
 {
@@ -61,6 +76,9 @@ template OnSerialized (alias method)
 /**
  * Methods with this attribute attached will be called after the struct/class has been
  * serialized.
+ * 
+ * See_Also: $(LREF OnSerialized)
+ * See_Also: $(LREF onDeserialized)
  */
 @attribute struct onSerialized { }
 
@@ -70,6 +88,9 @@ template OnSerialized (alias method)
  *
  * Params:
  *     method = the method to be invoked when the event is triggered
+ * 
+ * See_Also: $(LREF onSerializing)
+ * See_Also: $(LREF OnDeserializing)
  */
 template OnSerializing (alias method)
 {
@@ -79,6 +100,9 @@ template OnSerializing (alias method)
 /**
  * Methods with this attribute attached will be called before the struct/class has been
  * serialized.
+ * 
+ * See_Also: $(LREF OnSerializing)
+ * See_Also: $(LREF onDeserializing)
  */
 @attribute struct onSerializing { }
 

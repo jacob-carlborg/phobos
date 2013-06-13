@@ -123,6 +123,8 @@ final class XmlDocument
 	     * ---
 	     *
 	     * Returns: an invalid node
+	     * 
+	     * See_Also: $(LREF isValid)
 	     */
 	    @property public static Node invalid ()
 	    {
@@ -155,7 +157,7 @@ final class XmlDocument
 		 *
 		 * Returns: true if the receiver is valid.
 		 *
-		 * See_Also: invalid
+		 * See_Also: $(LREF invalid)
 		 */
 		@property bool isValid ()
 		{

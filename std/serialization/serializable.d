@@ -42,7 +42,7 @@ import std.serialization.serializer;
  * }
  * ---
  *
- * See_Also: isSerializable
+ * See_Also: $(LREF isSerializable)
  */
 interface Serializable
 {
@@ -52,6 +52,8 @@ interface Serializable
 	 * Params:
 	 *     serializer = the serializer that performs the serialization
 	 *     key = the key of the receiver
+	 * 
+	 * See_Also: $(LREF fromData)
 	 */
 	void toData (Serializer serializer, Serializer.Data key);
 
@@ -61,6 +63,8 @@ interface Serializable
 	 * Params:
 	 *     serializer = the serializer that performs the deserialization
 	 *     key = the key of the receiver
+	 * 
+	 * See_Also: $(LREF toData)
 	 */
 	void fromData (Serializer serializer, Serializer.Data key);
 }
@@ -92,7 +96,7 @@ interface Serializable
  * static assert(isSerializable!(Foo));
  * ---
  *
- * See_Also: Serializable
+ * See_Also: $(LREF Serializable)
  */
 template isSerializable (T)
 {
@@ -126,6 +130,8 @@ template isSerializable (T)
  * 	mixin NonSerialized; // "Bar" will not be (de)serialized
  * }
  * ---
+ * 
+ * See_Also: $(LREF nonSerialized)
  */
 template NonSerialized (Fields ...)
 {
@@ -136,7 +142,12 @@ template NonSerialized (Fields ...)
 		static enum __nonSerialized = toArray!(Fields)();
 }
 
-/// Indicates that the declaration this attribute is attached to should not be (de)serialized.
+/**
+ * Indicates that the declaration this attribute is attached to should not be
+ * (de)serialized.
+ * 
+ * See_Also: $(LREF NonSerialized)
+ */
 @attribute struct nonSerialized { }
 
 struct NonSerializedField (string name)
