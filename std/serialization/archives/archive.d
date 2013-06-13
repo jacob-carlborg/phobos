@@ -1367,9 +1367,10 @@ abstract class ArchiveBase (U) : Archive
         }
 
         catch (ConvException e)
+        {
             error(e);
-
-        return Data.init;
+            return Data.init;
+        }
     }
 
     /**
@@ -1402,9 +1403,10 @@ abstract class ArchiveBase (U) : Archive
         }
 
         catch (ConvException e)
+        {
             error(e);
-
-        return T.init;
+            return T.init;
+        }
     }
 
     /**
