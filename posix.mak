@@ -363,6 +363,13 @@ $(DOC_OUTPUT_DIR)/. :
 $(DOC_OUTPUT_DIR)/std_%.html : std/%.d $(STDDOC)
 	$(DDOC) $(DDOCFLAGS)  $(STDDOC) -Df$@ $<
 
+$(DOC_OUTPUT_DIR)/std_serialization_%.html : std/serialization/%.d $(STDDOC)
+	$(DDOC) $(DDOCFLAGS)  $(STDDOC) -Df$@ $<
+
+$(DOC_OUTPUT_DIR)/std_serialization_archives_%.html : \
+	std/serialization/archives/%.d $(STDDOC)
+	$(DDOC) $(DDOCFLAGS)  $(STDDOC) -Df$@ $<
+
 $(DOC_OUTPUT_DIR)/std_c_%.html : std/c/%.d $(STDDOC)
 	$(DDOC) $(DDOCFLAGS)  $(STDDOC) -Df$@ $<
 
