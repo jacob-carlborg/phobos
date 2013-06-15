@@ -297,7 +297,7 @@ class Serializer
      *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerDeserializer)
-     * See_Also: $(XREF Serializable, toData)
+     * See_Also: $(XREF3 serialization, serializable, .Serializable.toData)
      */
     static void registerSerializer (Derived, Base) (void delegate (Base, Serializer, Data) dg)
     {
@@ -334,7 +334,7 @@ class Serializer
      *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerDeserializer)
-     * See_Also: $(XREF Serializable, toData)
+     * See_Also: $(XREF3 serialization, serializable, .Serializable.toData)
      */
     static void registerSerializer (Derived, Base) (void function (Base, Serializer, Data) func)
     {
@@ -371,7 +371,7 @@ class Serializer
      *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerSerializer)
-     * See_Also: $(XREF Serializable, fromData)
+     * See_Also: $(XREF3 serialization, serializable, .Serializable.fromData)
      */
     static void registerDeserializer (Derived, Base) (void delegate (ref Base, Serializer, Data) dg)
     {
@@ -408,7 +408,7 @@ class Serializer
      *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerSerializer)
-     * See_Also: $(XREF Serializable, fromData)
+     * See_Also: $(XREF3 serialization, serializable, .Serializable.fromData)
      */
     static void registerDeserializer (Derived, Base) (void function (ref Base, Serializer, Data) func)
     {
@@ -448,7 +448,7 @@ class Serializer
      *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerSerializer)
-     * See_Also: $(XREF Serializable, toData)
+     * See_Also: $(XREF3 serialization, serializable, .Serializable.toData)
      */
     void overrideSerializer (Derived, Base) (void delegate (Base, Serializer, Data) dg)
     {
@@ -488,7 +488,7 @@ class Serializer
      *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerSerializer)
-     * See_Also: $(XREF Serializable, toData)
+     * See_Also: $(XREF3 serialization, serializable, .Serializable.toData)
      */
     void overrideSerializer (Derived, Base) (void function (Base, Serializer, Data) func)
     {
@@ -528,7 +528,7 @@ class Serializer
      *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerDeserializer)
-     * See_Also: $(XREF Serializable, fromData)
+     * See_Also: $(XREF3 serialization, serializable, .Serializable.fromData)
      */
     void overrideDeserializer (Derived, Base) (void delegate (ref Base, Serializer, Data) dg)
     {
@@ -568,7 +568,7 @@ class Serializer
      *
      * See_Also: $(LREF register)
      * See_Also: $(LREF registerDeserializer)
-     * See_Also: $(XREF3 serialization, Serializable, fromData)
+     * See_Also: $(XREF3 serialization, serializable, .Serializable.fromData)
      */
     void overrideDeserializer (Derived, Base) (void function (ref Base, Serializer, Data) func)
     {
@@ -635,7 +635,7 @@ class Serializer
      * All internal data is reset, including the archive. After calling this method the
      * serializer can be used to start a completely new (de)serialization process.
      *
-     * See_Also: $(XREF4 serialization, archives, archive, reset)
+     * See_Also: $(XREF4 serialization, archives, archive, .Archive.reset)
      */
     void reset ()
     {
