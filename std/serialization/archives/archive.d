@@ -112,7 +112,7 @@ interface Archive
      * ---
      * auto archive = new XmlArchive!();
      * serializer.errorCallback = (SerializationException exception) {
-     *     println(exception);
+     *     writeln(exception);
      *     throw exception;
      * };
      * ---
@@ -129,7 +129,7 @@ interface Archive
      * ---
      * auto archive = new XmlArchive!();
      * serializer.errorCallback = (SerializationException exception) {
-     *     println(exception);
+     *     writeln(exception);
      *     throw exception;
      * };
      * ---
@@ -1298,7 +1298,7 @@ abstract class ArchiveBase (U) : Archive
      * ---
      * auto archive = new XmlArchive!();
      * serializer.errorCallback = (SerializationException exception) {
-     *     println(exception);
+     *     writeln(exception);
      *     throw exception;
      * };
      * ---
@@ -1316,7 +1316,7 @@ abstract class ArchiveBase (U) : Archive
      * ---
      * auto archive = new XmlArchive!();
      * serializer.errorCallback = (SerializationException exception) {
-     *     println(exception);
+     *     writeln(exception);
      *     throw exception;
      * };
      * ---
