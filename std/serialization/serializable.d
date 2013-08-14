@@ -28,12 +28,12 @@ import std.serialization.serializer;
  * ---
  * class Foo : Serializable
  * {
- *     int a;
+ *  int a;
  *
- *     void toData (Serializer serializer, Serializer.Data key)
- *     {
- *         serializer.serialize(a, "b");
- *     }
+ *  void toData (Serializer serializer, Serializer.Data key)
+ *  {
+ *      serializer.serialize(a, "b");
+ *  }
  *
  *  void fromData (Serializer serializer, Serializer.Data key)
  *  {
@@ -70,9 +70,8 @@ interface Serializable
 }
 
 /**
- * This interface represents a type that this is serializable. To implement this interface
  * Evaluates to $(D_KEYWORD true) if the given type is serializable. A type is considered
- * serializable when it implements to two methods in the Serializable interface.
+ * serializable when it implements the to two methods in the Serializable interface.
  * Note that the type does not have to implement the actual interface, i.e. it also works
  * for structs.
  *
@@ -80,12 +79,12 @@ interface Serializable
  * ---
  * struct Foo
  * {
- *     int a;
+ *  int a;
  *
- *     void toData (Serializer serializer, Serializer.Data key)
- *     {
- *         serializer.serialize(a, "b");
- *     }
+ *  void toData (Serializer serializer, Serializer.Data key)
+ *  {
+ *      serializer.serialize(a, "b");
+ *  }
  *
  *  void fromData (Serializer serializer, Serializer.Data key)
  *  {
@@ -145,6 +144,21 @@ template NonSerialized (Fields ...)
 /**
  * Indicates that the declaration this attribute is attached to should not be
  * (de)serialized.
+ *
+ * Examples:
+ * ---
+ * class Foo
+ * {
+ *     int a;
+ *     @nonSerialized int b; // "b" will not be (de)serialized
+ * }
+ *
+ * @nonSerialized struct Bar // "Bar" will not be (de)serialized
+ * {
+ *     int a;
+ *     int b;
+ * }
+ * ---
  *
  * See_Also: $(LREF NonSerialized)
  */
