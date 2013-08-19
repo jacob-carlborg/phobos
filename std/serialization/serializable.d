@@ -105,43 +105,6 @@ template isSerializable (T)
 }
 
 /**
- * This template is used to indicate that one or several fields should not be
- * (de)serialized. If no fields or "this" is specified, it indicates that the whole
- * class/struct should not be (de)serialized.
- *
- * This template is used as a mixin.
- *
- * Examples:
- * ---
- * class Foo
- * {
- *     int a;
- *     int b;
- *
- *     mixin NonSerialized!(b); // "b" will not be (de)serialized
- * }
- *
- * struct Bar
- * {
- *     int a;
- *     int b;
- *
- *     mixin NonSerialized; // "Bar" will not be (de)serialized
- * }
- * ---
- *
- * See_Also: $(LREF nonSerialized)
- */
-template NonSerialized (Fields ...)
-{
-    static if (Fields.length == 0)
-        static enum __nonSerialized = ["this"[]];
-
-    else
-        static enum __nonSerialized = toArray!(Fields)();
-}
-
-/**
  * Indicates that the declaration this attribute is attached to should not be
  * (de)serialized.
  *
@@ -159,15 +122,8 @@ template NonSerialized (Fields ...)
  *     int b;
  * }
  * ---
- *
- * See_Also: $(LREF NonSerialized)
  */
 @attribute struct nonSerialized { }
-
-struct NonSerializedField (string name)
-{
-    enum field = name;
-}
 
 /*
  * Converts a tuple of aliases to an array of strings containing the names of the given
@@ -194,9 +150,3 @@ static string[] toArray (Args ...) ()
 
     return args;
 }
-
-package:
-
-enum nonSerializedField = "__nonSerialized";
-enum serializedField = "__serialized";
-enum internalFields = [nonSerializedField[], onDeserializedField, onDeserializingField, onSerializedField, onSerializingField];

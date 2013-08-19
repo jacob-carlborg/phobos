@@ -18,27 +18,17 @@ import std.traits;
 Serializer serializer;
 XmlArchive!(char) archive;
 
-class Bar
-{
-    mixin NonSerialized;
-
-    int c;
-}
-
-@nonSerialized class Baz
+@nonSerialized class Bar
 {
     int c;
 }
 
 class Foo
 {
-    int a;
+    @nonSerialized int a;
     int b;
     @nonSerialized int c;
     Bar bar;
-    Baz baz;
-
-    mixin NonSerialized!(a);
 }
 
 Foo foo;
@@ -54,7 +44,6 @@ void beforeEach ()
     foo.c = 5;
 
     foo.bar = new Bar;
-    foo.baz = new Baz;
 
     serializer.serialize(foo);
 }
@@ -74,7 +63,6 @@ void beforeEach ()
 
         assert(!archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Bar).toString() ~ `" type="Bar" key="bar" id="4"`));
         assert(!archive.data().containsXmlTag("int", `key="c" id="5"`, "0"));
-        assert(!archive.data().containsXmlTag("object", `runtimeType="` ~ typeid(Baz).toString() ~ `" type="Baz" key="bar" id="6"`));
         assert(!archive.data().containsXmlTag("int", `key="c" id="7"`, "0"));
     }
 }
@@ -91,6 +79,5 @@ void beforeEach ()
         assert(f.b == foo.b);
         assert(f.c == foo.c.init);
         assert(f.bar is foo.bar.init);
-        assert(f.baz is foo.baz.init);
     }
 }

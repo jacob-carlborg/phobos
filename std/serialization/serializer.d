@@ -1518,19 +1518,13 @@ class Serializer
     {
         static assert(isStruct!(T) || isObject!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
 
-        enum nonSerializedFields = collectAnnotations!(T)();
-
         foreach (i, dummy ; typeof(T.tupleof))
         {
             enum field = nameOfFieldAt!(T, i);
             mixin(`alias getAttributes!(value.` ~ field ~ `) attributes;`);
 
-            static if (attributes.contains!(nonSerialized)() ||
-                internalFields.canFind(field) ||
-                nonSerializedFields.canFind(field))
-            {
+            static if (attributes.contains!(nonSerialized))
                 continue;
-            }
 
             else
             {
@@ -1574,8 +1568,6 @@ class Serializer
     {
         static assert(isStruct!(T) || isObject!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
 
-        enum nonSerializedFields = collectAnnotations!(T)();
-
         static if (isObject!(T))
             auto rawObject = cast(void*) value;
 
@@ -1585,14 +1577,10 @@ class Serializer
         foreach (i, dummy ; typeof(T.tupleof))
         {
             enum field = nameOfFieldAt!(T, i);
-            mixin(`alias getAttributes!(value.` ~ field ~ `) attributes;`);
+            mixin("alias attributes = getAttributes!(value." ~ field ~ ");");
 
-            static if (attributes.contains!(nonSerialized)() ||
-                internalFields.canFind(field) ||
-                nonSerializedFields.canFind(field))
-            {
+            static if (attributes.contains!(nonSerialized))
                 continue;
-            }
 
             else
             {
@@ -1860,83 +1848,39 @@ class Serializer
         return to!(string)(value);
     }
 
-    private void triggerEvent (string name, T) (T value)
-    {
-        static assert (isObject!(T) || isStruct!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
-
-        static if (hasAnnotation!(T, name))
-        {
-            mixin("auto event = T." ~ name ~ ";");
-            event(value);
-        }
-    }
-
-    private void triggertUdaEvent (alias event, T) (T value)
+    private void triggerEvent (alias event, T) (T value)
     {
         static assert (isObject!(T) || isStruct!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
 
         foreach (m ; __traits(allMembers, T))
         {
-            static if (m != nonSerializedField)
-            {
-                mixin(`alias getAttributes!(T.` ~ m ~ `) attrs;`);
+            mixin("alias attrs = getAttributes!(T." ~ m ~ ");");
 
-                static if (attrs.contains!(event)())
-                    __traits(getMember, value, m)();
-            }
+            static if (attrs.contains!(event)())
+                __traits(getMember, value, m)();
         }
     }
 
     private void triggerEvents (T) (T value, void delegate () dg)
     {
         if (mode == serializing)
-        {
-            triggerEvent!(onSerializingField)(value);
-            triggertUdaEvent!(onSerializing)(value);
-        }
+            triggerEvent!(onSerializing)(value);
 
         else
-        {
-            triggerEvent!(onDeserializingField)(value);
-            triggertUdaEvent!(onDeserializing)(value);
-        }
+            triggerEvent!(onDeserializing)(value);
 
         dg();
 
         if (mode == serializing)
-        {
-            triggerEvent!(onSerializedField)(value);
-            triggertUdaEvent!(onSerialized)(value);
-        }
+            triggerEvent!(onSerialized)(value);
 
         else
-        {
-            triggerEvent!(onDeserializedField)(value);
-            triggertUdaEvent!(onDeserialized)(value);
-        }
+            triggerEvent!(onDeserialized)(value);
     }
 
     private static bool isNonSerialized (T) ()
     {
-        enum nonSerializedFields = collectAnnotations!(T)();
-
-        return nonSerializedFields.canFind("this") || getAttributes!(T).contains!(nonSerialized)();
-    }
-
-    private static template hasAnnotation (T, string annotation)
-    {
-        enum hasAnnotation = is(typeof({ mixin("const a = T." ~ annotation ~ ";"); }));
-    }
-
-    private static string[] collectAnnotations (T) ()
-    {
-        static assert (isObject!(T) || isStruct!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
-
-        static if (hasAnnotation!(T, nonSerializedField))
-            return T.__nonSerialized;
-
-        else
-            return [];
+        return getAttributes!(T).contains!(nonSerialized)();
     }
 
     private void error (string message, size_t line = __LINE__)
