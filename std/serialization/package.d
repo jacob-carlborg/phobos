@@ -8,6 +8,7 @@ module std.serialization;
 
 public:
 
+import std.serialization.deserializer;
 import std.serialization.events;
 import std.serialization.serializable;
 import std.serialization.serializationexception;

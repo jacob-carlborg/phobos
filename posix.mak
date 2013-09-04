@@ -165,9 +165,9 @@ STD_MODULES = $(addprefix std/, \
   string syserror system traits typecons typetuple uni uri utf uuid variant \
   xml zip zlib $(addprefix algorithm/,comparison iteration \
     mutation searching setops sorting) \
-	$(addprefix serialization/, attribute events registerwrapper serializable \
-		serializationexception serializer $(addprefix archives/, archive \
-		xmlarchive xmldocument)))
+	$(addprefix serialization/, attribute events deserializer registerwrapper \
+		serializable serializationexception serializer serializermixin \
+		$(addprefix archives/, archive xmlarchive xmldocument)))
 
 # Unit test modules
 STD_SERIALIZATION_TESTS_MODULES = $(addprefix std/serialization/tests/, \
