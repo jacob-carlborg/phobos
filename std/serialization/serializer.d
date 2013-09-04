@@ -24,17 +24,6 @@ import std.serialization.serializationexception;
 import std.serialization.serializermixin;
 import std.traits;
 
-private
-{
-    private char toUpper () (char c)
-    {
-        if (c >= 'a' && c <= 'z')
-            return cast(char) (c - 32);
-
-        return c;
-    }
-}
-
 /**
  * This class represents a serializer. It's the main interface to the serialization
  * process and it's this class that actually performs most of the serialization.
@@ -86,6 +75,8 @@ private
  */
 class Serializer
 {
+    mixin SerializerMixin;
+
     /// The type of error callback.
     alias Archive.ErrorCallback ErrorCallback;
 
@@ -239,7 +230,7 @@ class Serializer
             auto casted = cast(T) value;
             assert(casted);
             assert(casted.classinfo is T.classinfo);
-            serializer.objectStructSerializeHelper(casted);
+            serializer.aggregateSerializeHelper(casted);
         }
     }
 
@@ -636,7 +627,7 @@ class Serializer
                         }
 
                         else
-                            objectStructSerializeHelper(value);
+                            aggregateSerializeHelper(value);
                     }
                 });
             });
@@ -663,7 +654,7 @@ class Serializer
                             value.toData(this, key);
 
                         else
-                            objectStructSerializeHelper(value);
+                            aggregateSerializeHelper(value);
                     }
                 });
             });
@@ -791,7 +782,7 @@ class Serializer
         });
     }
 
-    private void objectStructSerializeHelper (T) (ref T value)
+    private void aggregateSerializeHelper (T) (ref T value)
     {
         static assert(isStruct!(T) || isObject!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
 
@@ -849,7 +840,7 @@ class Serializer
         {
             archive.archiveBaseClass(typeid(Base).toString(), nextKey(), nextId());
             inout Base base = value;
-            objectStructSerializeHelper(base);
+            aggregateSerializeHelper(base);
         }
     }
 
@@ -880,11 +871,6 @@ class Serializer
             return *tmp;
 
         return ValueMeta();
-    }
-
-    private T[] toSlice (T) (T[] array, Slice slice)
-    {
-        return array[slice.offset .. slice.offset + slice.length];
     }
 
     void callSerializer (T) (RegisterBase* baseWrapper, ref T value, string key)
@@ -943,247 +929,15 @@ class Serializer
         return typeid(ElementTypeOfArray!(T)).toString();
     }
 
-    private bool isBaseClass (T) (T value)
-    {
-        return value.classinfo !is T.classinfo;
-    }
-
-    private Id nextId ()
-    {
-        return idCounter++;
-    }
-
-    private string nextKey ()
-    {
-        return toData(keyCounter++);
-    }
-
-    private void resetCounters ()
-    {
-        keyCounter = 0;
-        idCounter = 0;
-    }
-
-    private string toData (T) (T value)
-    {
-        return to!(string)(value);
-    }
-
-    private void triggerEvent (alias event, T) (T value)
-    {
-        static assert (isObject!(T) || isStruct!(T), format!(`The given value of the type "`, T, `" is not a valid type, the only valid types for this method are objects and structs.`));
-
-        foreach (m ; __traits(allMembers, T))
-        {
-            mixin("alias attrs = getAttributes!(T." ~ m ~ ");");
-
-            static if (attrs.contains!(event)())
-                __traits(getMember, value, m)();
-        }
-    }
-
     private void triggerEvents (T) (T value, void delegate () dg)
     {
         triggerEvent!(onSerializing)(value);
             dg();
         triggerEvent!(onSerialized)(value);
     }
-
-    private static bool isNonSerialized (T) ()
-    {
-        return getAttributes!(T).contains!(nonSerialized)();
-    }
-
-    private void error (string message, size_t line = __LINE__)
-    {
-        if (errorCallback)
-            errorCallback()(new SerializationException(message, __FILE__, line));
-    }
-
-    struct Pointer (T)
-    {
-        T value;
-        Id id = Id.max;
-        Id pointee = Id.max;
-
-        @property bool hasPointee ()
-        {
-            return pointee != Id.max;
-        }
-    }
 }
 
 private:
-
-// Evaluates to true if $(D_PARAM T) is a primitive type.
-template isPrimitive (T)
-{
-    enum bool isPrimitive = is(T == bool) ||
-                        is(T == byte) ||
-                        is(T == cdouble) ||
-                        //is(T == cent) ||
-                        is(T == cfloat) ||
-                        is(T == char) ||
-                        is(T == creal) ||
-                        is(T == dchar) ||
-                        is(T == double) ||
-                        is(T == float) ||
-                        is(T == idouble) ||
-                        is(T == ifloat) ||
-                        is(T == int) ||
-                        is(T == ireal) ||
-                        is(T == long) ||
-                        is(T == real) ||
-                        is(T == short) ||
-                        is(T == ubyte) ||
-                        //is(T == ucent) ||
-                        is(T == uint) ||
-                        is(T == ulong) ||
-                        is(T == ushort) ||
-                        is(T == wchar);
-}
-
-// Evaluates to true if $(D_PARAM T) is class.
-template isClass (T)
-{
-    enum bool isClass = is(T == class);
-}
-
-// Evaluates to true if $(D_PARAM T) is an interface.
-template isInterface (T)
-{
-    enum bool isInterface = is(T == interface);
-}
-
-// Evaluates to true if $(D_PARAM T) is a class or an interface.
-template isObject (T)
-{
-    enum bool isObject = isClass!(T) || isInterface!(T);
-}
-
-// Evaluates to true if $(D_PARAM T) is an object or a pointer.
-template isReference (T)
-{
-    enum bool isReference = isObject!(T) || isPointer!(T);
-}
-
-// Evaluates to true if $(D_PARAM T) is an enum.
-template isEnum (T)
-{
-    enum bool isEnum = is(T == enum);
-}
-
-// Evaluates to true if $(D_PARAM T) is a typedef.
-template isTypedef (T)
-{
-    enum bool isTypedef = is(T == typedef);
-}
-
-// Evaluates to true if $(D_PARAM T) is void.
-template isVoid (T)
-{
-    enum bool isVoid = is(T == void);
-}
-
-// Evaluates to true if $(D_PARAM T) is a struct.
-template isStruct (T)
-{
-    enum isStruct = is(T == struct);
-}
-
-// Evaluates the type of the element of the array.
-template ElementTypeOfArray(T : T[])
-{
-    alias T ElementTypeOfArray;
-}
-
-// Evaluates to the base type of the enum.
-template BaseTypeOfEnum (T)
-{
-    static if (is(T U == enum))
-        alias BaseTypeOfEnum!(U) BaseTypeOfEnum;
-
-    else
-        alias T BaseTypeOfEnum;
-}
-
-inout(T)[] assumeUnique (T) (ref T[] source, ref inout(T)[] destination)
-{
-    destination = cast(inout(T)[]) source;
-    source = null;
-
-    return destination;
-}
-
-/*
- * Evaluates to true if T has a field with the given name
- *
- * Params:
- *         T = the type of the class/struct
- *         field = the name of the field
- */
-template hasField (T, string field)
-{
-    enum hasField = hasFieldImpl!(T, field, 0);
-}
-
-private template hasFieldImpl (T, string field, size_t i)
-{
-    static if (T.tupleof.length == i)
-        enum hasFieldImpl = false;
-
-    else static if (T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $] == field)
-        enum hasFieldImpl = true;
-
-    else
-        enum hasFieldImpl = hasFieldImpl!(T, field, i + 1);
-}
-
-// Evaluates to an array of strings containing the names of the fields in the given type
-template fieldsOf (T)
-{
-    enum fieldsOf = fieldsOfImpl!(T, 0);
-}
-
-/*
- * Implementation for fieldsOf
- *
- * Returns: an array of strings containing the names of the fields in the given type
- */
-template fieldsOfImpl (T, size_t i)
-{
-    static if (T.tupleof.length == 0)
-        enum fieldsOfImpl = [""];
-
-    else static if (T.tupleof.length - 1 == i)
-        enum fieldsOfImpl = [T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $]];
-
-    else
-        enum fieldsOfImpl = T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $] ~ fieldsOfImpl!(T, i + 1);
-}
-
-/*
- * Evaluates to the type of the field with the given name
- *
- * Params:
- *         T = the type of the class/struct
- *         field = the name of the field
- */
-template TypeOfField (T, string field)
-{
-    static assert(hasField!(T, field), "The given field \"" ~ field ~ "\" doesn't exist in the type \"" ~ T.stringof ~ "\"");
-
-    alias TypeOfFieldImpl!(T, field, 0) TypeOfField;
-}
-
-private template TypeOfFieldImpl (T, string field, size_t i)
-{
-    static if (T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $] == field)
-        alias typeof(T.tupleof[i]) TypeOfFieldImpl;
-
-    else
-        alias TypeOfFieldImpl!(T, field, i + 1) TypeOfFieldImpl;
-}
 
 /*
  * Evaluates to a string containing the name of the field at given position in the given type.
@@ -1201,60 +955,4 @@ template nameOfFieldAt (T, size_t position)
 
     else
         enum nameOfFieldAt = "";
-}
-
-/*
- * Sets the given value to the filed with the given name
- *
- * Params:
- *     t = an instance of the type that has the field
- *     value = the value to set
- */
-void setValueOfField (T, U, string field) (ref T t, U value)
-in
-{
-    static assert(hasField!(T, field), "The given field \"" ~ field ~ "\" doesn't exist in the type \"" ~ T.stringof ~ "\"");
-}
-body
-{
-    enum len = T.stringof.length;
-
-    foreach (i, dummy ; typeof(T.tupleof))
-    {
-        enum f = T.tupleof[i].stringof[1 + len + 2 .. $];
-
-        static if (f == field)
-        {
-            t.tupleof[i] = value;
-            break;
-        }
-    }
-}
-
-/*
- * Gets the value of the field with the given name
- *
- * Params:
- *     t = an instance of the type that has the field
- *
- * Returns: the value of the field
- */
-U getValueOfField (T, U, string field) (T t)
-in
-{
-    static assert(hasField!(T, field), "The given field \"" ~ field ~ "\" doesn't exist in the type \"" ~ T.stringof ~ "\"");
-}
-body
-{
-    enum len = T.stringof.length;
-
-    foreach (i, dummy ; typeof(T.tupleof))
-    {
-        enum f = T.tupleof[i].stringof[1 + len + 2 .. $];
-
-        static if (f == field)
-            return t.tupleof[i];
-    }
-
-    assert(0);
 }
