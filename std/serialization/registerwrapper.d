@@ -8,6 +8,7 @@
  */
 module std.serialization.registerwrapper;
 
+import std.serialization.deserializer;
 import std.serialization.serializer;
 
 package:
@@ -83,7 +84,7 @@ class SerializeRegisterWrapper (T) : RegisterBase
  */
 class DeserializeRegisterWrapper (T) : RegisterBase
 {
-    private void delegate (ref T, Serializer, Serializer.Data) dg;
+    private void delegate (ref T, Deserializer, Serializer.Data) dg;
     private bool isDelegate;
 
     /**
@@ -94,7 +95,7 @@ class DeserializeRegisterWrapper (T) : RegisterBase
      * Params:
      *     dg = the delegate to call when performing custom serialization
      */
-    this (void delegate (ref T, Serializer, Serializer.Data) dg)
+    this (void delegate (ref T, Deserializer, Serializer.Data) dg)
     {
         isDelegate = true;
         this.dg = dg;
@@ -108,7 +109,7 @@ class DeserializeRegisterWrapper (T) : RegisterBase
      * Params:
      *     dg = the delegate to call when performing custom serialization
      */
-    this (void function (ref T, Serializer, Serializer.Data) func)
+    this (void function (ref T, Deserializer, Serializer.Data) func)
     {
         dg.funcptr = func;
     }
@@ -121,7 +122,7 @@ class DeserializeRegisterWrapper (T) : RegisterBase
      *     serializer = the serializer that performs the deserialization
      *     key = the key of the given value
      */
-    void opCall (ref T value, Serializer serializer, Serializer.Data key)
+    void opCall (ref T value, Deserializer serializer, Serializer.Data key)
     {
         if (dg && isDelegate)
             dg(value, serializer, key);

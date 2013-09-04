@@ -12,6 +12,7 @@ import std.conv;
 import std.serialization.archives.xmldocument;
 import std.serialization.archives.archive;
 import std.serialization.serializer;
+import std.serialization.serializermixin;
 import std.traits;
 
 private enum ArchiveMode

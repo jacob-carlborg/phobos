@@ -10,8 +10,10 @@ module std.serialization.archives.archive;
 
 import std.array;
 import std.conv;
+import std.serialization.deserializer;
 import std.serialization.serializationexception;
 import std.serialization.serializer;
+import std.serialization.serializermixin;
 import std.traits;
 import std.utf;
 
