@@ -4,13 +4,13 @@
  * Version: Initial created: Jan 26, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
  *
- * Source: $(PHOBOSSRC std/serialization/archives/_xmlarchive.d)
+ * Source: $(PHOBOSSRC std/serialization/archivers/_xmlarchive.d)
  */
-module std.serialization.archives.xmlarchive;
+module std.serialization.archivers.xmlarchiver;
 
 import std.conv;
-import std.serialization.archives.xmldocument;
-import std.serialization.archives.archive;
+import std.serialization.archivers.xmldocument;
+import std.serialization.archivers.archiver;
 import std.serialization.serializer;
 import std.serialization.serializermixin;
 import std.traits;

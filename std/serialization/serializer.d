@@ -15,7 +15,7 @@ module std.serialization.serializer;
 import std.algorithm : canFind;
 import std.array;
 import std.conv;
-import std.serialization.archives.archive;
+import std.serialization.archivers.archiver;
 import std.serialization.attribute;
 import std.serialization.events;
 import std.serialization.registerwrapper;

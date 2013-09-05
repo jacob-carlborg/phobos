@@ -8,5 +8,5 @@ module std.serialization.archives;
 
 public:
 
-import std.serialization.archives.archive;
-import std.serialization.archives.xmlarchive;
+import std.serialization.archivers.archiver;
+import std.serialization.archivers.xmlarchiver;

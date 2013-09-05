@@ -4,9 +4,9 @@
  * Version: Initial created: Jun 26, 2010
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
  *
- * Source: $(PHOBOSSRC std/serialization/archives/_xmldocument.d)
+ * Source: $(PHOBOSSRC std/serialization/archivers/_xmldocument.d)
  */
-module std.serialization.archives.xmldocument;
+module std.serialization.archivers.xmldocument;
 
 package:
 
