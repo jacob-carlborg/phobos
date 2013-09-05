@@ -10,7 +10,7 @@ version (unittest):
 private:
 
 import std.serialization.serializer;
-import std.serialization.archives.xmlarchive;
+import std.serialization.archivers.xmlarchiver;
 import std.serialization.tests.util;
 import std.traits;
 

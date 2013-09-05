@@ -9,7 +9,7 @@
 module std.serialization.serializable;
 
 import std.serialization.attribute;
-import std.serialization.archives.archive;
+import std.serialization.archivers.archiver;
 import std.serialization.events;
 import std.serialization.serializer;
 

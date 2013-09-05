@@ -68,7 +68,7 @@ DOC_OUTPUT_DIR = $(WEBSITE_DIR)/phobos-prerelease
 BIGDOC_OUTPUT_DIR = /tmp
 SRC_DOCUMENTABLES = index.d $(addsuffix .d,$(STD_MODULES) $(STD_NET_MODULES) \
 	$(STD_DIGEST_MODULES) $(STD_SERIALIZATION_MODULES) \
-	$(STD_SERIALIZATION_ARCHIVES_MODULES) $(EXTRA_DOCUMENTABLES))
+	$(STD_SERIALIZATION_ARCHIVERS_MODULES) $(EXTRA_DOCUMENTABLES))
 STDDOC = $(DOCSRC)/std.ddoc
 BIGSTDDOC = $(DOCSRC)/std_consolidated.ddoc
 DDOCFLAGS=$(MODEL_FLAG) -w -d -c -o- -version=StdDdoc -I$(DRUNTIME_PATH)/import $(DMDEXTRAFLAGS)
@@ -179,8 +179,8 @@ STD_SERIALIZATION_MODULES = $(addprefix std/serialization/, attribute deserializ
 		 events registerwrapper serializable serializationexception serializer \
 		 serializermixin)
 
-STD_SERIALIZATION_ARCHIVES_MODULES = $(addprefix std/serialization/archives/, \
-		archive xmlarchive xmldocument)
+STD_SERIALIZATION_ARCHIVERS_MODULES = $(addprefix std/serialization/archivers/, \
+		archiver xmlarchiver xmldocument)
 
 # Unit test modules
 STD_SERIALIZATION_TESTS_MODULES = $(addprefix std/serialization/tests/, \
@@ -215,7 +215,7 @@ EXTRA_MODULES += $(EXTRA_DOCUMENTABLES) $(addprefix			\
 # Aggregate all D modules relevant to this build
 D_MODULES = crc32 $(STD_MODULES) $(EXTRA_MODULES) $(STD_NET_MODULES) \
 	$(STD_DIGEST_MODULES) $(STD_SERIALIZATION_MODULES) \
-	$(STD_SERIALIZATION_ARCHIVES_MODULES) $(STD_SERIALIZATION_TESTS_MODULES)
+	$(STD_SERIALIZATION_ARCHIVERS_MODULES) $(STD_SERIALIZATION_TESTS_MODULES)
 # Add the .d suffix to the module names
 D_FILES = $(addsuffix .d,$(D_MODULES))
 # Aggregate all D modules over all OSs (this is for the zip file)
@@ -379,7 +379,7 @@ $(DOC_OUTPUT_DIR)/std_serialization_%.html : std/serialization/%.d $(STDDOC)
 	$(DDOC) $(DDOCFLAGS)  $(STDDOC) -Df$@ $<
 
 $(DOC_OUTPUT_DIR)/std_serialization_archives_%.html : \
-	std/serialization/archives/%.d $(STDDOC)
+	std/serialization/archivers/%.d $(STDDOC)
 	$(DDOC) $(DDOCFLAGS)  $(STDDOC) -Df$@ $<
 
 $(DOC_OUTPUT_DIR)/std_c_%.html : std/c/%.d $(STDDOC)
