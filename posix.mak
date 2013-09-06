@@ -180,7 +180,8 @@ STD_SERIALIZATION_MODULES = $(addprefix std/serialization/, attribute deserializ
 		 serializermixin)
 
 STD_SERIALIZATION_ARCHIVERS_MODULES = $(addprefix std/serialization/archivers/, \
-		archiver xmlarchiver xmldocument)
+		archiver unarchiver xmlarchiver xmlarchivermixin xmlunarchiver \
+		xmldocument)
 
 # Unit test modules
 STD_SERIALIZATION_TESTS_MODULES = $(addprefix std/serialization/tests/, \

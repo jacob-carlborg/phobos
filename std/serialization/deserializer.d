@@ -15,7 +15,7 @@ module std.serialization.deserializer;
 import std.algorithm : canFind;
 import std.array;
 import std.conv;
-import std.serialization.archivers.archiver;
+import std.serialization.archivers.unarchiver;
 import std.serialization.attribute;
 import std.serialization.events;
 import std.serialization.registerwrapper;
@@ -78,13 +78,13 @@ class Deserializer
     mixin SerializerMixin;
 
     /// The type of error callback.
-    alias Archive.ErrorCallback ErrorCallback;
+    alias Unarchiver.ErrorCallback ErrorCallback;
 
     /// The type of the serialized data. This is an untyped format.
-    alias Archive.UntypedData Data;
+    alias Unarchiver.UntypedData Data;
 
     /// The type of an ID.
-    alias Archive.Id Id;
+    alias Unarchiver.Id Id;
 
     /**
      * This callback will be called when an unexpected event occurs, i.e. an expected element
@@ -143,7 +143,7 @@ class Deserializer
             RegisterBase[string] deserializers;
         }
 
-        Archive archive_;
+        Unarchiver archive_;
 
         size_t keyCounter;
         Id idCounter;
@@ -177,7 +177,7 @@ class Deserializer
      * auto serializer = new Serializer(archive);
      * ---
      */
-    this (Archive archive)
+    this (Unarchiver archive)
     {
         this.archive_ = archive;
 
@@ -393,7 +393,7 @@ class Deserializer
      *
      * See_Also: $(XREF4 serialization, archives, archive, Archive)
      */
-    @property Archive archive ()
+    @property Unarchiver archive ()
     {
         return archive_;
     }
