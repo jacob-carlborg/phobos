@@ -78,13 +78,13 @@ class Serializer
     mixin SerializerMixin;
 
     /// The type of error callback.
-    alias Archive.ErrorCallback ErrorCallback;
+    alias Archiver.ErrorCallback ErrorCallback;
 
     /// The type of the serialized data. This is an untyped format.
-    alias Archive.UntypedData Data;
+    alias Archiver.UntypedData Data;
 
     /// The type of an ID.
-    alias Archive.Id Id;
+    alias Archiver.Id Id;
 
     /**
      * This callback will be called when an unexpected event occurs, i.e. an expected element
@@ -143,7 +143,7 @@ class Serializer
             RegisterBase[string] serializers;
         }
 
-        Archive archive_;
+        Archiver archive_;
 
         size_t keyCounter;
         Id idCounter;
@@ -178,7 +178,7 @@ class Serializer
      * auto serializer = new Serializer(archive);
      * ---
      */
-    this (Archive archive)
+    this (Archiver archive)
     {
         this.archive_ = archive;
 
@@ -393,7 +393,7 @@ class Serializer
      *
      * See_Also: $(XREF4 serialization, archives, archive, Archive)
      */
-    @property Archive archive ()
+    @property Archiver archive ()
     {
         return archive_;
     }

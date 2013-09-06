@@ -167,7 +167,8 @@ STD_MODULES = $(addprefix std/, \
     mutation searching setops sorting) \
 	$(addprefix serialization/, attribute events deserializer registerwrapper \
 		serializable serializationexception serializer serializermixin \
-		$(addprefix archivers/, archiver xmlarchiver xmldocument)))
+		$(addprefix archivers/, archiver unarchiver xmlarchiver xmlarchivermixin \
+			xmlunarchiver xmldocument)))
 
 # Unit test modules
 STD_SERIALIZATION_TESTS_MODULES = $(addprefix std/serialization/tests/, \
