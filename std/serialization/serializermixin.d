@@ -205,3 +205,16 @@ template BaseTypeOfEnum (T)
     else
         alias T BaseTypeOfEnum;
 }
+
+/*
+ * Evaluates to a string containing the name of the field at given position in the given type.
+ *
+ * Params:
+ *         T = the type of the class/struct
+ *         position = the position of the field in the tupleof array
+ */
+template nameOfFieldAt (T, size_t position)
+{
+    static assert (position < T.tupleof.length, format!(`The given position "`, position, `" is greater than the number of fields (`, T.tupleof.length, `) in the type "`, T, `"`));
+    enum nameOfFieldAt = __traits(identifier, T.tupleof[position]);
+}

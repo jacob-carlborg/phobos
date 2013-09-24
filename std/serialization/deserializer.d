@@ -1200,7 +1200,7 @@ private template hasFieldImpl (T, string field, size_t i)
     static if (T.tupleof.length == i)
         enum hasFieldImpl = false;
 
-    else static if (T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $] == field)
+    else static if (nameOfFieldAt!(T, i) == field)
         enum hasFieldImpl = true;
 
     else
@@ -1223,27 +1223,9 @@ template TypeOfField (T, string field)
 
 private template TypeOfFieldImpl (T, string field, size_t i)
 {
-    static if (T.tupleof[i].stringof[1 + T.stringof.length + 2 .. $] == field)
+    static if (nameOfFieldAt!(T, i) == field)
         alias typeof(T.tupleof[i]) TypeOfFieldImpl;
 
     else
         alias TypeOfFieldImpl!(T, field, i + 1) TypeOfFieldImpl;
-}
-
-/*
- * Evaluates to a string containing the name of the field at given position in the given type.
- *
- * Params:
- *         T = the type of the class/struct
- *         position = the position of the field in the tupleof array
- */
-template nameOfFieldAt (T, size_t position)
-{
-    static assert (position < T.tupleof.length, format!(`The given position "`, position, `" is greater than the number of fields (`, T.tupleof.length, `) in the type "`, T, `"`));
-
-    static if (T.tupleof[position].stringof.length > T.stringof.length + 3)
-        enum nameOfFieldAt = T.tupleof[position].stringof[1 + T.stringof.length + 2 .. $];
-
-    else
-        enum nameOfFieldAt = "";
 }
