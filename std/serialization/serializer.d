@@ -789,6 +789,7 @@ class Serializer
         foreach (i, dummy ; typeof(T.tupleof))
         {
             enum field = nameOfFieldAt!(T, i);
+
             mixin(`alias getAttributes!(value.` ~ field ~ `) attributes;`);
 
             static if (attributes.contains!(nonSerialized))
@@ -935,24 +936,4 @@ class Serializer
             dg();
         triggerEvent!(onSerialized)(value);
     }
-}
-
-private:
-
-/*
- * Evaluates to a string containing the name of the field at given position in the given type.
- *
- * Params:
- *         T = the type of the class/struct
- *         position = the position of the field in the tupleof array
- */
-template nameOfFieldAt (T, size_t position)
-{
-    static assert (position < T.tupleof.length, format!(`The given position "`, position, `" is greater than the number of fields (`, T.tupleof.length, `) in the type "`, T, `"`));
-
-    static if (T.tupleof[position].stringof.length > T.stringof.length + 3)
-        enum nameOfFieldAt = T.tupleof[position].stringof[1 + T.stringof.length + 2 .. $];
-
-    else
-        enum nameOfFieldAt = "";
 }
