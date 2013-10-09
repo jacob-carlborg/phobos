@@ -175,9 +175,9 @@ STD_NET_MODULES = $(addprefix std/net/, isemail curl)
 
 STD_DIGEST_MODULES = $(addprefix std/digest/, digest crc md ripemd sha)
 
-STD_SERIALIZATION_MODULES = $(addprefix std/serialization/, attribute deserializer \
-		 events registerwrapper serializable serializationexception serializer \
-		 serializermixin)
+STD_SERIALIZATION_MODULES = $(addprefix std/serialization/, attribute concreteserializer \
+	 	deserializer events registerwrapper serializable serializationexception serializer \
+		serializermixin)
 
 STD_SERIALIZATION_ARCHIVERS_MODULES = $(addprefix std/serialization/archivers/, \
 		archiver unarchiver xmlarchiver xmlarchivermixin xmlunarchiver \

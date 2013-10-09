@@ -15,7 +15,6 @@ module std.serialization.serializer;
 import std.algorithm : canFind;
 import std.array;
 import std.conv;
-import std.serialization.archivers.archiver;
 import std.serialization.attribute;
 import std.serialization.events;
 import std.serialization.registerwrapper;
@@ -73,18 +72,26 @@ import std.traits;
  * }
  * ---
  */
-class Serializer
+abstract class Serializer
 {
     mixin SerializerMixin;
 
-    /// The type of error callback.
-    alias Archiver.ErrorCallback ErrorCallback;
+    /**
+     * This is the type of an error callback which is called when an unexpected event occurs.
+     *
+     * Params:
+     *     exception = the exception indicating what error occurred
+     *     data = arbitrary data pass along, deprecated
+     *
+     * See_Also: $(LREF errorCallback)
+     */
+    alias void delegate (SerializationException exception) ErrorCallback;
 
     /// The type of the serialized data. This is an untyped format.
-    alias Archiver.UntypedData Data;
+    alias Data = immutable(void)[];
 
     /// The type of an ID.
-    alias Archiver.Id Id;
+    alias Id = size_t;
 
     /**
      * This callback will be called when an unexpected event occurs, i.e. an expected element
@@ -100,10 +107,7 @@ class Serializer
      * };
      * ---
      */
-    @property ErrorCallback errorCallback ()
-    {
-        return archive.errorCallback;
-    }
+    @property abstract ErrorCallback errorCallback ();
 
     /**
      * This callback will be called when an unexpected event occurs, i.e. an expected element
@@ -119,10 +123,7 @@ class Serializer
      * };
      * ---
      */
-    @property ErrorCallback errorCallback (ErrorCallback errorCallback)
-    {
-        return archive.errorCallback = errorCallback;
-    }
+    @property abstract ErrorCallback errorCallback (ErrorCallback errorCallback);
 
     private
     {
@@ -142,8 +143,6 @@ class Serializer
             void function (Serializer serializer, in Object) [ClassInfo] registeredTypes;
             RegisterBase[string] serializers;
         }
-
-        Archiver archive_;
 
         size_t keyCounter;
         Id idCounter;
@@ -178,10 +177,8 @@ class Serializer
      * auto serializer = new Serializer(archive);
      * ---
      */
-    this (Archiver archive)
+    protected this ()
     {
-        this.archive_ = archive;
-
         throwOnErrorCallback = (SerializationException exception) { throw exception; };
         doNothingOnErrorCallback = (SerializationException exception) { /* do nothing */ };
 
@@ -389,16 +386,6 @@ class Serializer
     }
 
     /**
-     * Returns the receivers archive.
-     *
-     * See_Also: $(XREF4 serialization, archives, archive, Archive)
-     */
-    @property Archiver archive ()
-    {
-        return archive_;
-    }
-
-    /**
      * Set the error callback to throw when an error occurs
      *
      * See_Also: $(LREF setDoNothingOnErrorCallback)
@@ -449,7 +436,7 @@ class Serializer
      *
      * See_Also: $(XREF4 serialization, archives, archive, .Archive.reset)
      */
-    void reset ()
+    abstract void reset ()
     {
         resetCounters();
 
@@ -458,8 +445,6 @@ class Serializer
         serializedArrays = null;
         serializedValues = null;
         hasBegunSerializing = false;
-
-        archive.reset();
     }
 
     /**
@@ -470,7 +455,7 @@ class Serializer
      *     key = associates the value with the given key. This key can later be used to
      *              deserialize the value
      *
-      * Examples:
+     * Examples:
      * ---
      * auto archive = new XmlArchive!();
      * auto serializer = new Serializer(archive);
@@ -486,16 +471,17 @@ class Serializer
      *
      * See_Also: $(LREF deserialize)
      */
-    Data serialize (T) (T value, string key = null)
+    void serialize (T) (T value, string key = null)
     {
         if (!hasBegunSerializing)
             hasBegunSerializing = true;
 
         serializeInternal(value, key);
         postProcess();
-
-        return archive.untypedData;
     }
+
+	/// ditto
+	alias put = serialize;
 
     /**
      * Serializes the base class(es) of an instance.
@@ -528,8 +514,536 @@ class Serializer
     void serializeBase (T) (T value)
     {
         static if (isObject!(T) && !is(Unqual!(T) == Object))
-                serializeBaseTypes(value);
+            serializeBaseTypes(value);
     }
+
+    /// Starts the serialization process. Call this method before serializing any values.
+    protected abstract void beginSerialization ();
+
+    /**
+     * Serializes a null pointer or reference.
+     *
+     * Examples:
+     * ---
+     * int* ptr;
+     *
+     * auto serializer = new Serializer();
+     * serializer.serializeNull(typeid(ptr).toString, "ptr");
+     * ---
+     *
+     * Params:
+     *     type = the runtime type of the pointer or reference to serialize
+     *     key = the key associated with the null pointer
+     */
+    protected abstract void serializeNull (string type, string key);
+
+    /**
+     * Serializes a reference.
+     *
+     * A reference is reference to another value. For example, if an object is serialized
+     * more than once, the first time it's serialized it will actual serialize the object.
+     * The second time the object will be serialized a reference will be serialized instead
+     * of the actual object.
+     *
+     * This method is also used when serializing a pointer that points to a value that has
+     * been or will be archived as well.
+     *
+     * Examples:
+     * ---
+     * class Foo {}
+     *
+     * class Bar
+     * {
+     *     Foo f;
+     *     Foo f2;
+     * }
+     *
+     * auto bar = new Bar;
+     * bar.f = new Foo;
+     * bar.f2 = bar.f;
+     *
+     * auto archive = new XmlArchive!();
+     *
+     * // when achiving "bar"
+     * archive.archiveObject(Foo.classinfo.name, "Foo", "f", 0, {});
+     * archive.archiveReference("f2", 0); // archive a reference to "f"
+     * ---
+     *
+     * Params:
+     *     key = the key associated with the reference
+     *     id = the id of the value this reference refers to
+     */
+    protected abstract void serializeReference (string key, Id id);
+
+    /**
+     * Archives an object, either a class or an interface.
+     *
+     * Examples:
+     * ---
+     * class Foo
+     * {
+     *     int a;
+     * }
+     *
+     * auto foo = new Foo;
+     *
+     * auto archive = new XmlArchive!();
+     * archive.archiveObject(Foo.classinfo.name, "Foo", "foo", 0, {
+     *     // archive the fields of Foo
+     * });
+     * ---
+     *
+     * Params:
+     *     runtimeType = the runtime type of the object
+     *     type = the static type of the object
+     *     key = the key associated with the object
+     *     id = the id associated with the object
+     *     dg = a callback that performs the archiving of the individual fields
+     *
+     * See_Also: $(LREF archiveBaseClass)
+     */
+    protected abstract void beginSerializeObject (string runtimeType, string type, string key, Id id);
+
+    protected abstract void endSerializeObject ();
+
+    /**
+     * Archives a struct.
+     *
+     * Examples:
+     * ---
+     * struct Foo
+     * {
+     *     int a;
+     * }
+     *
+     * auto foo = Foo(3);
+     *
+     * auto archive = new XmlArchive!();
+     * archive.archiveStruct(Foo.stringof, "foo", 0, {
+     *     // archive the fields of Foo
+     * });
+     * ---
+     *
+     * Params:
+     *     type = the type of the struct
+     *     key = the key associated with the struct
+     *     id = the id associated with the struct
+     *     dg = a callback that performs the archiving of the individual fields
+     */
+    protected abstract void beginSerializeStruct (string type, string key, Id id);
+
+    protected abstract void endSerializeStruct ();
+
+    /**
+     * Serializes the given value.
+     *
+     * Params:
+     *     value = the value to serialize
+     *     key = the key associated with the value
+     *     id = the id associated wit the value
+     */
+    protected abstract void serializeString (string value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeString (wstring value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeString (dstring value, string key, Id id);
+
+    /**
+     * Archives an array.
+     *
+     * Examples:
+     * ---
+     * int[] arr = [1, 2, 3];
+     *
+     * auto archive = new XmlArchive!();
+     *
+     * auto a = Array(arr.ptr, arr.length, typeof(a[0]).sizeof);
+     *
+     * archive.archive(a, typeof(a[0]).string, "arr", 0, {
+     *     // archive the individual elements
+     * });
+     * ---
+     *
+     * Params:
+     *     array = the array to archive
+     *     type = the runtime type of an element of the array
+     *     key = the key associated with the array
+     *     id = the id associated with the array
+     */
+    protected abstract void beginSerializeArray (Array array, string type, string key, Id id);
+
+    protected abstract void endSerializeArray ();
+
+    /**
+     * Archives an associative array.
+     *
+     * Examples:
+     * ---
+     * int[string] arr = ["a"[] : 1, "b" : 2, "c" : 3];
+     *
+     * auto archive = new XmlArchive!();
+     *
+     * archive.archive(string.stringof, int.stringof, arr.length, "arr", 0, {
+     *     // archive the individual keys and values
+     * });
+     * ---
+     *
+     *
+     * Params:
+     *     keyType = the runtime type of the keys
+     *     valueType = the runtime type of the values
+     *     length = the length of the associative array
+     *     key = the key associated with the associative array
+     *     id = the id associated with the associative array
+     *
+     * See_Also: $(LREF archiveAssociativeArrayValue)
+     * See_Also: $(LREF archiveAssociativeArrayKey)
+     */
+    protected abstract void beginSerializeAssociativeArray (string keyType, string valueType, size_t length, string key, Id id);
+
+    protected abstract void endSerializeAssociativeArray ();
+
+    /**
+     * Archives a pointer.
+     *
+     * If a pointer points to a value that is serialized as well, the pointer should be
+     * archived as a reference. Otherwise the value that the pointer points to should be
+     * serialized as a regular value.
+     *
+     * Examples:
+     * ---
+     * class Foo
+     * {
+     *     int a;
+     *     int* b;
+     * }
+     *
+     * auto foo = new Foo;
+     * foo.a = 3;
+     * foo.b = &foo.a;
+     *
+     * archive = new XmlArchive!();
+     * archive.archivePointer("b", 0, {
+     *     // archive "foo.b" as a reference
+     * });
+     * ---
+     *
+     * ---
+     * int a = 3;
+     *
+     * class Foo
+     * {
+     *     int* b;
+     * }
+     *
+     * auto foo = new Foo;
+     * foo.b = &a;
+     *
+     * archive = new XmlArchive!();
+     * archive.archivePointer("b", 0, {
+     *     // archive "foo.b" as a regular value
+     * });
+     * ---
+     *
+     * Params:
+     *     key = the key associated with the pointer
+     *     id = the id associated with the pointer
+     */
+    protected abstract void beginSerializePointer (string key, Id id);
+
+    protected abstract void endSerializePointer ();
+
+    /**
+     * Archives an associative array key.
+     *
+     * There are separate methods for archiving associative array keys and values
+     * because both the key and the value can be of arbitrary type and needs to be
+     * archived on its own.
+     *
+     * Examples:
+     * ---
+     * int[string] arr = ["a"[] : 1, "b" : 2, "c" : 3];
+     *
+     * auto archive = new XmlArchive!();
+     *
+     * foreach(k, v ; arr)
+     * {
+     *     archive.archiveAssociativeArrayKey(to!(string)(i), {
+     *         // archive the key
+     *     });
+     * }
+     * ---
+     *
+     * The foreach statement in the above example would most likely be executed in the
+     * callback passed to the archiveAssociativeArray method.
+     *
+     * Params:
+     *     key = the key associated with the key
+     *
+     * See_Also: $(LREF archiveAssociativeArray)
+     * See_Also: $(LREF archiveAssociativeArrayValue)
+     */
+    protected abstract void beginSerializeAssociativeArrayKey (string key);
+
+    protected abstract void endSerializeAssociativeArrayKey ();
+
+    /**
+     * Archives an associative array value.
+     *
+     * There are separate methods for archiving associative array keys and values
+     * because both the key and the value can be of arbitrary type and needs to be
+     * archived on its own.
+     *
+     * Examples:
+     * ---
+     * int[string] arr = ["a"[] : 1, "b" : 2, "c" : 3];
+     *
+     * auto archive = new XmlArchive!();
+     * size_t i;
+     *
+     * foreach(k, v ; arr)
+     * {
+     *     archive.archiveAssociativeArrayValue(to!(string)(i), {
+     *         // archive the value
+     *     });
+     *
+     *     i++;
+     * }
+     * ---
+     *
+     * The foreach statement in the above example would most likely be executed in the
+     * callback passed to the archiveAssociativeArray method.
+     *
+     * Params:
+     *     key = the key associated with the value
+     *
+     * See_Also: $(LREF archiveAssociativeArray)
+     * See_Also: $(LREF archiveAssociativeArrayKey)
+     */
+    protected abstract void beginSerializeAssociativeArrayValue (string key);
+
+    protected abstract void endSerializeAssociativeArrayValue ();
+
+    /**
+     * Archives a typedef.
+     *
+     * Examples:
+     * ---
+     * typedef int Foo;
+     * Foo a = 3;
+     *
+     * auto archive = new XmlArchive!();
+     * archive.archiveTypedef(Foo.stringof, "a", 0, {
+     *     // archive "a" as the base type of Foo, i.e. int
+     * });
+     * ---
+     *
+     * Params:
+     *     type = the type of the typedef
+     *     key = the key associated with the typedef
+     *     id = the id associated with the typedef
+     *     dg = a callback that performs the archiving of the value as the base
+     *             type of the typedef
+     */
+    protected abstract void beginSerializeTypedef (string type, string key, Id id);
+
+    protected abstract void endSerializeTypedef ();
+
+    /**
+     * Archives a base class.
+     *
+     * This method is used to indicate that the all following calls to archive a value
+     * should be part of the base class. This method is usually called within the
+     * callback passed to $(LREF archiveObject). The $(LREF archiveObject)
+     * method can the mark the end of the class.
+     *
+     * Examples:
+     * ---
+     * class ArchiveBase {}
+     * class Foo : ArchiveBase {}
+     *
+     * auto archive = new XmlArchive!();
+     * archive.archiveBaseClass("ArchiveBase", "base", 0);
+     * ---
+     *
+     * Params:
+     *     type = the type of the base class to archive
+     *     key = the key associated with the base class
+     *     id = the id associated with the base class
+     *
+     * See_Also: $(LREF archiveObject)
+     */
+    protected abstract void serializeBaseClass (string type, string key, Id id);
+
+    /**
+     * Archives a slice.
+     *
+     * This method should be used when archiving an array that is a slice of an
+     * already archived array or an array that has not yet been archived.
+     *
+     * Examples:
+     * ---
+     * auto arr = [1, 2, 3, 4];
+     * auto slice = arr[1 .. 3];
+     *
+     * auto archive = new XmlArchive!();
+     * // archive "arr" with id 0
+     *
+     * auto s = Slice(slice.length, 1);
+     * archive.archiveSlice(s, 1, 0);
+     * ---
+     *
+     * Params:
+     *     slice = the slice to be archived
+     *     sliceId = the id associated with the slice
+     *     arrayId = the id associated with the array this slice is a slice of
+     */
+    protected abstract void serializeSlice (Slice slice, Id sliceId, Id arrayId);
+
+    /**
+     * Serializes the given value.
+     *
+     * Example:
+     * ---
+     * enum Foo : bool
+     * {
+     *     bar
+     * }
+     *
+     * auto foo = Foo.bar;
+     * auto archive = new XmlArchive!();
+     * archive.archive(foo, "bool", "foo", 0);
+     * ---
+     *
+     * Params:
+     *     value = the value to serialize
+     *     baseType = the base type of the enum
+     *     key = the key associated with the value
+     *     id = the id associated with the value
+     */
+    protected abstract void serializeEnum (bool value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (byte value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (char value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (dchar value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (int value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (long value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (short value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (ubyte value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (uint value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (ulong value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (ushort value, string baseType, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializeEnum (wchar value, string baseType, string key, Id id);
+
+    /**
+     * Serializes the given value.
+     *
+     * Params:
+     *     value = the value to serialize
+     *     key = the key associated with the value
+     *     id = the id associated wit the value
+     */
+    protected abstract void serializePrimitive (bool value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (byte value, string key, Id id);
+
+
+    //protected abstract void serializePrimitive (cdouble value, string key, Id id); // currently not supported by to!()
+
+
+    //protected abstract void serializePrimitive (cent value, string key, Id id);
+
+    //protected abstract void serializePrimitive (cfloat value, string key, Id id); // currently not supported by to!()
+
+    /// Ditto
+    protected abstract void serializePrimitive (char value, string key, Id id);
+
+    //protected abstract void serializePrimitive (creal value, string key, Id id); // currently not supported by to!()
+
+    /// Ditto
+    protected abstract void serializePrimitive (dchar value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (double value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (float value, string key, Id id);
+
+
+    //protected abstract void serializePrimitive (idouble value, string key, Id id); // currently not supported by to!()
+
+    //protected abstract void serializePrimitive (ifloat value, string key, Id id); // currently not supported by to!()
+
+    /// Ditto
+    protected abstract void serializePrimitive (int value, string key, Id id);
+
+
+    //protected abstract void serializePrimitive (ireal value, string key, Id id); // currently not supported by to!()
+
+    /// Ditto
+    protected abstract void serializePrimitive (long value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (real value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (short value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (ubyte value, string key, Id id);
+
+    //protected abstract void serializePrimitive (ucent value, string key, Id id); // currently not implemented but a reserved keyword
+
+    /// Ditto
+    protected abstract void serializePrimitive (uint value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (ulong value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (ushort value, string key, Id id);
+
+    /// Ditto
+    protected abstract void serializePrimitive (wchar value, string key, Id id);
+
+    /**
+     * Performs post processing of the array associated with the given id.
+     *
+     * Post processing can basically be anything that the archive wants to do. This
+     * method is called by the serializer once for each serialized array at the end of
+     * the serialization process when all values have been serialized.
+     *
+     * With this method the archive has a last chance of changing an archived array to
+     * an archived slice instead.
+     *
+     * Params:
+     *     id = the id associated with the array
+     */
+    protected abstract void postProcessArray (Id id);
 
     private void serializeInternal (U) (U value, string key = null, Id id = Id.max)
     {
@@ -541,7 +1055,7 @@ class Serializer
         if (id == Id.max)
             id = nextId();
 
-        archive.beginArchiving();
+        beginSerialization();
 
         static if ( is(T == typedef) )
             serializeTypedef(value, key, id);
@@ -553,7 +1067,7 @@ class Serializer
             serializeStruct(value, key, id);
 
         else static if (isSomeString!(T))
-            serializeString(value, key, id);
+            serializeStringInternal(value, key, id);
 
         else static if (isArray!(T))
             serializeArray(value, key, id);
@@ -574,7 +1088,7 @@ class Serializer
         }
 
         else static if (isEnum!(T))
-            serializeEnum(value, key, id);
+            serializeEnumInternal(value, key, id);
 
         else
         {
@@ -590,19 +1104,19 @@ class Serializer
         static if (!isNonSerialized!(T)())
         {
             if (!value)
-                return archive.archiveNull(typeName, key);
+                return serializeNull(typeName, key);
 
             auto reference = getSerializedReference(value);
 
             if (reference != Id.max)
-                return archive.archiveReference(key, reference);
+                return serializeReference(key, reference);
 
             auto runtimeType = value.classinfo.name;
 
             addSerializedReference(value, id);
 
             triggerEvents(value, {
-                archive.archiveObject(runtimeType, typeName, key, id, {
+                beginSerializeObject(runtimeType, typeName, key, id);
                     if (auto serializer = runtimeType in overriddenSerializers)
                         callSerializer(serializer, value, key);
 
@@ -629,7 +1143,7 @@ class Serializer
                         else
                             aggregateSerializeHelper(value);
                     }
-                });
+                endSerializeObject();
             });
         }
     }
@@ -641,7 +1155,7 @@ class Serializer
             string type = typeid(T).toString();
 
             triggerEvents(value, {
-                archive.archiveStruct(type, key, id, {
+                beginSerializeStruct(type, key, id);
                     if (auto serializer = type in overriddenSerializers)
                         callSerializer(serializer, value, key);
 
@@ -656,16 +1170,16 @@ class Serializer
                         else
                             aggregateSerializeHelper(value);
                     }
-                });
+                endSerializeStruct();
             });
         }
     }
 
-    private void serializeString (T) (T value, string key, Id id)
+    private void serializeStringInternal (T) (T value, string key, Id id)
     {
         auto array = Array(cast(void*) value.ptr, value.length, ElementTypeOfArray!(T).sizeof);
 
-        archive.archive(value, key, id);
+        serializeStringInternal(value, key, id);
 
         if (value.length > 0)
             addSerializedArray(array, id);
@@ -674,14 +1188,14 @@ class Serializer
     private void serializeArray (T) (T value, string key, Id id)
     {
         auto array = Array(value.ptr, value.length, ElementTypeOfArray!(T).sizeof);
-
-        archive.archiveArray(array, arrayToString!(T)(), key, id, {
+        
+        beginSerializeArray(array, arrayToString!(T)(), key, id);
             for (size_t i = 0; i < value.length; i++)
             {
                 const e = value[i];
                 serializeInternal(e, toData(i));
             }
-        });
+        endSerializeArray();
 
         if (value.length > 0)
             addSerializedArray(array, id);
@@ -692,42 +1206,42 @@ class Serializer
         auto reference = getSerializedReference(value);
 
         if (reference != Id.max)
-            return archive.archiveReference(key, reference);
+            return serializeReference(key, reference);
 
         addSerializedReference(value, id);
 
         string keyType = typeid(KeyType!(T)).toString();
         string valueType = typeid(ValueType!(T)).toString();
 
-        archive.archiveAssociativeArray(keyType, valueType, value.length, key, id, {
+        beginSerializeAssociativeArray(keyType, valueType, value.length, key, id);
             size_t i;
 
             foreach(k, v ; value)
             {
-                archive.archiveAssociativeArrayKey(toData(i), {
+                beginSerializeAssociativeArrayKey(toData(i));
                     serializeInternal(k, toData(i));
-                });
+                endSerializeAssociativeArrayKey();
 
-                archive.archiveAssociativeArrayValue(toData(i), {
+                beginSerializeAssociativeArrayValue(toData(i));
                     serializeInternal(v, toData(i));
-                });
+                endSerializeAssociativeArrayValue();
 
                 i++;
             }
-        });
+        endSerializeAssociativeArray();
     }
 
     private void serializePointer (T) (T value, string key, Id id)
     {
         if (!value)
-            return archive.archiveNull(typeid(T).toString(), key);
+            return serializeNull(typeid(T).toString(), key);
 
         auto reference = getSerializedReference(value);
 
         if (reference != Id.max)
-            return archive.archiveReference(key, reference);
+            return serializeReference(key, reference);
 
-        archive.archivePointer(key, id, {
+        beginSerializePointer(key, id);
             if (auto serializer = key in overriddenSerializers)
                 callSerializer(serializer, value, key);
 
@@ -750,36 +1264,31 @@ class Serializer
                     auto valueMeta = getSerializedValue(value);
 
                     if (valueMeta.isValid)
-                        archive.archiveReference(nextKey(), valueMeta.id);
+                        serializeReference(nextKey(), valueMeta.id);
 
                     else
                         serializeInternal(*value, nextKey());
                 }
             }
-        });
+        endSerializePointer();
 
         addSerializedReference(value, id);
     }
 
-    private void serializeEnum (T) (T value, string key, Id id)
+    private void serializeEnumInternal (T) (T value, string key, Id id)
     {
         alias BaseTypeOfEnum!(T) EnumBaseType;
         auto val = cast(EnumBaseType) value;
         string type = typeid(T).toString();
 
-        archive.archiveEnum(val, type, key, id);
-    }
-
-    private void serializePrimitive (T) (T value, string key, Id id)
-    {
-        archive.archive(value, key, id);
+        serializeEnum(val, type, key, id);
     }
 
     private void serializeTypedef (T) (T value, string key, Id id)
     {
-        archive.archiveTypedef(typeid(T).toString(), key, nextId(), {
+        beginSerializeTypedef(typeid(T).toString(), key, nextId());
             serializeInternal!(OriginalType!(T))(value, nextKey());
-        });
+        endSerializeTypedef();
     }
 
     private void aggregateSerializeHelper (T) (ref T value)
@@ -811,7 +1320,7 @@ class Serializer
                 auto reference = getSerializedReference(v);
 
                 if (reference != Id.max)
-                    archive.archiveReference(field, reference);
+                    serializeReference(field, reference);
 
                 else
                 {
@@ -839,7 +1348,7 @@ class Serializer
 
         static if (!is(Unqual!(Base) == Object))
         {
-            archive.archiveBaseClass(typeid(Base).toString(), nextKey(), nextId());
+            serializeBaseClass(typeid(Base).toString(), nextKey(), nextId());
             inout Base base = value;
             aggregateSerializeHelper(base);
         }
@@ -911,7 +1420,7 @@ class Serializer
                 if (slice.isSliceOf(array) && slice != array)
                 {
                     auto s = Slice(slice.length, (slice.ptr - array.ptr) / slice.elementSize);
-                    archive.archiveSlice(s, sliceKey, arrayKey);
+                    serializeSlice(s, sliceKey, arrayKey);
                     foundSlice = true;
                     break;
                 }
@@ -921,7 +1430,7 @@ class Serializer
             }
 
             if (!foundSlice)
-                archive.postProcessArray(sliceKey);
+                postProcessArray(sliceKey);
         }
     }
 

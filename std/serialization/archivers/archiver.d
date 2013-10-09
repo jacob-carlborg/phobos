@@ -126,7 +126,9 @@ interface Archiver
      *     id = the id associated with the array
      *     dg = a callback that performs the archiving of the individual elements
      */
-    void archiveArray (Array array, string type, string key, Id id, void delegate () dg);
+    void beginArchiveArray (Array array, string type, string key, Id id);
+
+    void endArchiveArray ();
 
     /**
      * Archives an associative array.
@@ -154,7 +156,9 @@ interface Archiver
      * See_Also: $(LREF archiveAssociativeArrayValue)
      * See_Also: $(LREF archiveAssociativeArrayKey)
      */
-    void archiveAssociativeArray (string keyType, string valueType, size_t length, string key, Id id, void delegate () dg);
+    void beginArchiveAssociativeArray (string keyType, string valueType, size_t length, string key, Id id);
+
+    void endArchiveAssociativeArray ();
 
     /**
      * Archives an associative array key.
@@ -187,7 +191,9 @@ interface Archiver
      * See_Also: $(LREF archiveAssociativeArray)
      * See_Also: $(LREF archiveAssociativeArrayValue)
      */
-    void archiveAssociativeArrayKey (string key, void delegate () dg);
+    void beginArchiveAssociativeArrayKey (string key);
+
+    void endArchiveAssociativeArrayKey ();
 
     /**
      * Archives an associative array value.
@@ -223,7 +229,9 @@ interface Archiver
      * See_Also: $(LREF archiveAssociativeArray)
      * See_Also: $(LREF archiveAssociativeArrayKey)
      */
-    void archiveAssociativeArrayValue (string key, void delegate () dg);
+    void beginArchiveAssociativeArrayValue (string key);
+
+    void endArchiveAssociativeArrayValue ();
 
     /**
      * Archives the given value.
@@ -246,9 +254,6 @@ interface Archiver
      *     key = the key associated with the value
      *     id = the id associated with the value
      */
-    void archiveEnum (bool value, string baseType, string key, Id id);
-
-    /// Ditto
     void archiveEnum (bool value, string baseType, string key, Id id);
 
     /// Ditto
@@ -354,7 +359,9 @@ interface Archiver
      *
      * See_Also: $(LREF archiveBaseClass)
      */
-    void archiveObject (string runtimeType, string type, string key, Id id, void delegate () dg);
+    void beginArchiveObject (string runtimeType, string type, string key, Id id);
+
+    void endArchiveObject ();
 
     /**
      * Archives a pointer.
@@ -403,7 +410,9 @@ interface Archiver
      *     id = the id associated with the pointer
      *     dg = a callback that performs the archiving of value pointed to by the pointer
      */
-    void archivePointer (string key, Id id, void delegate () dg);
+    void beginArchivePointer (string key, Id id);
+
+    void endArchivePointer ();
 
     /**
      * Archives a reference.
@@ -492,7 +501,9 @@ interface Archiver
      *     id = the id associated with the struct
      *     dg = a callback that performs the archiving of the individual fields
      */
-    void archiveStruct (string type, string key, Id id, void delegate () dg);
+    void beginArchiveStruct (string type, string key, Id id);
+
+    void endArchiveStruct ();
 
     /**
      * Archives a typedef.
@@ -515,7 +526,9 @@ interface Archiver
      *     dg = a callback that performs the archiving of the value as the base
      *             type of the typedef
      */
-    void archiveTypedef (string type, string key, Id id, void delegate () dg);
+    void beginArchiveTypedef (string type, string key, Id id);
+
+    void endArchiveTypedef ();
 
     /**
      * Archives the given value.
@@ -693,16 +706,8 @@ mixin template ArchiverMixin ()
     /// The typed used to represent the archived data in an untyped form.
     alias immutable(void)[] UntypedData;
 
-    /**
-     * This is the type of an error callback which is called when an unexpected event occurs.
-     *
-     * Params:
-     *     exception = the exception indicating what error occurred
-     *     data = arbitrary data pass along, deprecated
-     *
-     * See_Also: $(LREF errorCallback)
-     */
-    alias void delegate (SerializationException exception) ErrorCallback;
+    /// The type of error callback.
+    alias ErrorCallback = Serializer.ErrorCallback;
 
     /**
      * This callback will be called when an unexpected event occurs, i.e. an expected element

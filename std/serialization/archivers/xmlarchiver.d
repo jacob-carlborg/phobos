@@ -31,6 +31,7 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
 
         XmlDocument doc;
         doc.Node lastElement;
+        doc.Node tempElement;
 
         bool hasBegunArchiving;
 
@@ -110,12 +111,15 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      *     id = the id associated with the array
      *     dg = a callback that performs the archiving of the individual elements
      */
-    void archiveArray (Array array, string type, string key, Id id, void delegate () dg)
+    void beginArchiveArray (Array array, string type, string key, Id id)
     {
-        restore!(lastElement, {
-            internalArchiveArray(array, type, key, id, Tags.arrayTag);
-            dg();
-        });
+        pushElement();
+        internalArchiveArray(array, type, key, id, Tags.arrayTag);
+    }
+
+    void endArchiveArray ()
+    {
+        popElement();
     }
 
     private void internalArchiveArray(Array array, string type, string key, Id id, Data tag, Data content = null)
@@ -162,18 +166,21 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      * See_Also: $(LREF archiveAssociativeArrayValue)
      * See_Also: $(LREF archiveAssociativeArrayKey)
      */
-    void archiveAssociativeArray (string keyType, string valueType, size_t length, string key, Id id, void delegate () dg)
+    void beginArchiveAssociativeArray (string keyType, string valueType, size_t length, string key, Id id)
     {
-        restore!(lastElement, {
-            lastElement = lastElement.element(Tags.associativeArrayTag)
-            .attribute(Attributes.keyTypeAttribute, toData(keyType))
-            .attribute(Attributes.valueTypeAttribute, toData(valueType))
-            .attribute(Attributes.lengthAttribute, toData(length))
-            .attribute(Attributes.keyAttribute, key)
-            .attribute(Attributes.idAttribute, toData(id));
+        popElement();
 
-            dg();
-        });
+        lastElement = lastElement.element(Tags.associativeArrayTag)
+        .attribute(Attributes.keyTypeAttribute, toData(keyType))
+        .attribute(Attributes.valueTypeAttribute, toData(valueType))
+        .attribute(Attributes.lengthAttribute, toData(length))
+        .attribute(Attributes.keyAttribute, key)
+        .attribute(Attributes.idAttribute, toData(id));
+    }
+
+    void endArchiveAssociativeArray ()
+    {
+        popElement();
     }
 
     /**
@@ -207,9 +214,14 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      * See_Also: $(LREF archiveAssociativeArray)
      * See_Also: $(LREF archiveAssociativeArrayValue)
      */
-    void archiveAssociativeArrayKey (string key, void delegate () dg)
+    void beginArchiveAssociativeArrayKey (string key)
     {
-        internalArchiveAAKeyValue(key, Tags.keyTag, dg);
+        internalArchiveAAKeyValue(key, Tags.keyTag);
+    }
+
+    void endArchiveAssociativeArrayKey ()
+    {
+        popElement();
     }
 
     /**
@@ -246,19 +258,21 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      * See_Also: $(LREF archiveAssociativeArray)
      * See_Also: $(LREF archiveAssociativeArrayKey)
      */
-    void archiveAssociativeArrayValue (string key, void delegate () dg)
+    void beginArchiveAssociativeArrayValue (string key)
     {
-        internalArchiveAAKeyValue(key, Tags.valueTag, dg);
+        internalArchiveAAKeyValue(key, Tags.valueTag);
     }
 
-    private void internalArchiveAAKeyValue (string key, Data tag, void delegate () dg)
+    void endArchiveAssociativeArrayValue ()
     {
-        restore!(lastElement, {
-            lastElement = lastElement.element(tag)
-            .attribute(Attributes.keyAttribute, toData(key));
+        popElement();
+    }
 
-            dg();
-        });
+    private void internalArchiveAAKeyValue (string key, Data tag)
+    {
+        pushElement();
+        lastElement = lastElement.element(tag)
+        .attribute(Attributes.keyAttribute, toData(key));
     }
 
     /**
@@ -439,17 +453,19 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      *     id = the id associated with the object
      *     dg = a callback that performs the archiving of the individual fields
      */
-    void archiveObject (string runtimeType, string type, string key, Id id, void delegate () dg)
+    void beginArchiveObject (string runtimeType, string type, string key, Id id)
     {
-        restore!(lastElement, {
-            lastElement = lastElement.element(Tags.objectTag)
-            .attribute(Attributes.runtimeTypeAttribute, toData(runtimeType))
-            .attribute(Attributes.typeAttribute, toData(type))
-            .attribute(Attributes.keyAttribute, toData(key))
-            .attribute(Attributes.idAttribute, toData(id));
+        pushElement();
+        lastElement = lastElement.element(Tags.objectTag)
+        .attribute(Attributes.runtimeTypeAttribute, toData(runtimeType))
+        .attribute(Attributes.typeAttribute, toData(type))
+        .attribute(Attributes.keyAttribute, toData(key))
+        .attribute(Attributes.idAttribute, toData(id));
+    }
 
-            dg();
-        });
+    void endArchiveObject ()
+    {
+        popElement();
     }
 
     /**
@@ -499,15 +515,17 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      *     id = the id associated with the pointer
      *     dg = a callback that performs the archiving of value pointed to by the pointer
      */
-    void archivePointer (string key, Id id, void delegate () dg)
+    void beginArchivePointer (string key, Id id)
     {
-        restore!(lastElement, {
-            lastElement = lastElement.element(Tags.pointerTag)
-            .attribute(Attributes.keyAttribute, toData(key))
-            .attribute(Attributes.idAttribute, toData(id));
+        pushElement();
+        lastElement = lastElement.element(Tags.pointerTag)
+        .attribute(Attributes.keyAttribute, toData(key))
+        .attribute(Attributes.idAttribute, toData(id));
+    }
 
-            dg();
-        });
+    void endArchivePointer ()
+    {
+        popElement();
     }
 
     /**
@@ -613,16 +631,18 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      *     id = the id associated with the struct
      *     dg = a callback that performs the archiving of the individual fields
      */
-    void archiveStruct (string type, string key, Id id, void delegate () dg)
+    void beginArchiveStruct (string type, string key, Id id)
     {
-        restore!(lastElement, {
-            lastElement = lastElement.element(Tags.structTag)
-            .attribute(Attributes.typeAttribute, toData(type))
-            .attribute(Attributes.keyAttribute, toData(key))
-            .attribute(Attributes.idAttribute, toData(id));
+        pushElement();
+        lastElement = lastElement.element(Tags.structTag)
+        .attribute(Attributes.typeAttribute, toData(type))
+        .attribute(Attributes.keyAttribute, toData(key))
+        .attribute(Attributes.idAttribute, toData(id));
+    }
 
-            dg();
-        });
+    void endArchiveStruct ()
+    {
+        popElement();
     }
 
     /**
@@ -646,16 +666,18 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      *     dg = a callback that performs the archiving of the value as the base
      *             type of the typedef
      */
-    void archiveTypedef (string type, string key, Id id, void delegate () dg)
+    void beginArchiveTypedef (string type, string key, Id id)
     {
-        restore!(lastElement, {
-            lastElement = lastElement.element(Tags.typedefTag)
-            .attribute(Attributes.typeAttribute, toData(type))
-            .attribute(Attributes.keyAttribute, toData(key))
-            .attribute(Attributes.idAttribute, toData(id));
+        pushElement();
+        lastElement = lastElement.element(Tags.typedefTag)
+        .attribute(Attributes.typeAttribute, toData(type))
+        .attribute(Attributes.keyAttribute, toData(key))
+        .attribute(Attributes.idAttribute, toData(id));
+    }
 
-            dg();
-        });
+    void endArchiveTypedef ()
+    {
+        popElement();
     }
 
     /**
@@ -929,6 +951,16 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
     }
 
     enum errorMessage = "Could not continue archiving due to unrecognized data format: ";
+
+    void pushElement ()
+    {
+        tempElement = lastElement;
+    }
+
+    void popElement ()
+    {
+        lastElement = tempElement;
+    }
 }
 
 private:
