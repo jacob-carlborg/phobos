@@ -9,13 +9,21 @@
 module std.serialization.archivers.xmlarchivermixin;
 
 import std.serialization.archivers.archiver;
+import std.string : format;
 
 package:
 
 mixin template XmlArchiverMixin ()
 {
+    /// The version of the archiver.
+    enum version_ = "1.0.0";
 
 private:
+
+    enum archiverType = "std.serialization.archivers.xmlarchiver.XmlArchiver";
+    enum xmlTag = `<?xml version="1.0" encoding="UTF-8"?>`;
+    enum header = format(`<archive version="%s" type="%s">`, version_, archiverType);
+    enum footer = "</archive>";
 
     struct Tags
     {
@@ -36,6 +44,7 @@ private:
         static enum Data elementTag = "element";
         static enum Data keyTag = "key";
         static enum Data valueTag = "value";
+        static enum Data rangeTag = "range";
     }
 
     struct Attributes

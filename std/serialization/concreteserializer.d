@@ -112,16 +112,43 @@ final class ConcreteSerializer (Archiver) : Serializer
 		return archiver.untypedData;
     }
 
+    /**
+     * Indicates the serialization is done.
+     *
+     * Call this method to when no more objects are expected to be serialized. This allows
+     * archives that use nested structure to end their content.
+     */
+    override void done ()
+    {
+        archiver.done();
+    }
+
+    /**
+     * Resets the serializer.
+     *
+     * All internal data is reset, including the archiver. After calling this method the
+     * serializer can be used to start a completely new (de)serialization process.
+     *
+     * See_Also: $(XREF4 serialization, archives, archive, .Archive.reset)
+     */
 	override void reset ()
 	{
 		super.reset();
 		archiver.reset();
 	}
 
+    /// Flushes the archiver and outputs its data to the internal output range.
+    override void flush ()
+    {
+        archiver.flush();
+    }
+
     mixin ForwardMethods!(
         Method!(Serializer.beginSerialization),
         Method!(Serializer.serializeNull),
         Method!(Serializer.serializeReference),
+        Method!(Serializer.beginSerializeRange),
+        Method!(Serializer.endSerializeRange),
         Method!(Serializer.beginSerializeObject),
         Method!(Serializer.endSerializeObject),
         Method!(Serializer.beginSerializeStruct),

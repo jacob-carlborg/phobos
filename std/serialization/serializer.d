@@ -15,12 +15,14 @@ module std.serialization.serializer;
 import std.algorithm : canFind;
 import std.array;
 import std.conv;
+import std.range : isInputRange, hasLength, ElementTypeOfRange = ElementType;
 import std.serialization.attribute;
 import std.serialization.events;
 import std.serialization.registerwrapper;
 import std.serialization.serializable;
 import std.serialization.serializationexception;
 import std.serialization.serializermixin;
+import std.string : format;
 import std.traits;
 
 /**
@@ -447,6 +449,8 @@ abstract class Serializer
         hasBegunSerializing = false;
     }
 
+    abstract void flush ();
+
     /**
      * Serializes the given value.
      *
@@ -473,15 +477,40 @@ abstract class Serializer
      */
     void serialize (T) (T value, string key = null)
     {
-        if (!hasBegunSerializing)
-            hasBegunSerializing = true;
+        auto shouldFlush = false;
 
-        serializeInternal(value, key);
-        postProcess();
+        if (hasBegunSerializing)
+            serializeInternal(value, key);
+
+        else
+        {
+            shouldFlush = true;
+            beginSerialization();
+
+            static if (isInputRange!(T) && !isArray!(T))
+                serializeRange(value, key);
+
+            else
+                serializeInternal(value, key);
+        }
+
+        if (shouldFlush)
+        {
+            postProcess();
+            flush();
+        }
     }
 
 	/// ditto
 	alias put = serialize;
+
+    /**
+     * Indicates the serialization is done.
+     *
+     * Call this method to when no more objects are expected to be serialized. This allows
+     * archives that use nested structure to end their content.
+     */
+    abstract void done ();
 
     /**
      * Serializes the base class(es) of an instance.
@@ -574,6 +603,19 @@ abstract class Serializer
      *     id = the id of the value this reference refers to
      */
     protected abstract void serializeReference (string key, Id id);
+
+    /**
+     * Starts serializing a range.
+     *
+     * Params:
+     *     type = the runtime type of an element of the range
+     *     length = the length of the range. If not available, size_t.max should be used
+     *     key = the key associated with the range
+     *     id = the id associated with the array
+     */
+    protected abstract void beginSerializeRange (string type, size_t length, string key, Id id);
+
+    protected abstract void endSerializeRange ();
 
     /**
      * Archives an object, either a class or an interface.
@@ -1045,9 +1087,17 @@ abstract class Serializer
      */
     protected abstract void postProcessArray (Id id);
 
-    private void serializeInternal (U) (U value, string key = null, Id id = Id.max)
+    private void serializeRange (U) (U value, string key = null, Id id = Id.max)
     {
         alias Unqual!(U) T;
+
+        static if (hasLength!(T))
+            immutable length = value.length;
+
+        else
+            immutable length = size_t.max;
+
+        immutable type = typeName!(ElementTypeOfRange!(T));
 
         if (!key)
             key = nextKey();
@@ -1055,9 +1105,33 @@ abstract class Serializer
         if (id == Id.max)
             id = nextId();
 
-        beginSerialization();
+        beginSerializeRange(type, length, key, id);
 
-        static if ( is(T == typedef) )
+        foreach (e ; value)
+            serializeInternal(e);
+
+        endSerializeRange();
+    }
+
+    private void serializeInternal (U) (U value, string key = null, Id id = Id.max)
+    {
+        alias Unqual!(U) T;
+
+        void unsupportedType ()
+        {
+            error(format(`The type "%s" cannot be serialized.`, typeName!(T)));
+        }
+
+        if (!key)
+            key = nextKey();
+
+        if (id == Id.max)
+            id = nextId();
+
+        static if (isInputRange!(T) && !isArray!(T))
+            unsupportedType();
+
+        else static if ( is(T == typedef) )
             serializeTypedef(value, key, id);
 
         else static if (isObject!(T))
@@ -1081,7 +1155,7 @@ abstract class Serializer
         else static if (isPointer!(T))
         {
             static if (isFunctionPointer!(T))
-                goto error;
+                unsupportedType();
 
             else
                 serializePointer(value, key, id);
@@ -1091,10 +1165,7 @@ abstract class Serializer
             serializeEnumInternal(value, key, id);
 
         else
-        {
-            error:
-            error(format!(`The type "`, T, `" cannot be serialized.`));
-        }
+            unsupportedType();
     }
 
     private void serializeObject (T) (T value, string key, Id id)
@@ -1188,7 +1259,7 @@ abstract class Serializer
     private void serializeArray (T) (T value, string key, Id id)
     {
         auto array = Array(value.ptr, value.length, ElementTypeOfArray!(T).sizeof);
-        
+
         beginSerializeArray(array, arrayToString!(T)(), key, id);
             for (size_t i = 0; i < value.length; i++)
             {
@@ -1445,4 +1516,11 @@ abstract class Serializer
             dg();
         triggerEvent!(onSerialized)(value);
     }
+}
+
+private:
+
+string typeName (T) ()
+{
+    return typeid(T).toString();
 }

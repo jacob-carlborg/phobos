@@ -9,6 +9,7 @@
 module std.serialization.archivers.xmlarchiver;
 
 import std.conv;
+import std.range : ElementType, isInputRange;
 import std.serialization.archivers.archiver;
 import std.serialization.archivers.xmlarchivermixin;
 import std.serialization.archivers.xmldocument;
@@ -20,7 +21,7 @@ import std.traits;
  * This class is a concrete implementation of the Archive interface. This archive
  * uses XML as the final format for the serialized data.
  */
-final class XmlArchiver (U = char) : ArchiverBase!(U)
+final class XmlArchiver (Range) : ArchiverBase!(string)
 {
     mixin XmlArchiverMixin;
 
@@ -28,6 +29,8 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
     {
         Data archiveType = "std.xml";
         Data archiveVersion = "1.0.0";
+
+        Range range_;
 
         XmlDocument doc;
         doc.Node lastElement;
@@ -43,12 +46,20 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
      * Creates a new instance of this class with the give error callback.
      *
      * Params:
+     *     range = The output range that backs the archiver. This is where all data will be put.
      *     errorCallback = The callback to be called when an error occurs
      */
-    this (ErrorCallback errorCallback = null)
+    this (Range range, ErrorCallback errorCallback = null)
     {
         super(errorCallback);
+        range_ = range;
         doc = new XmlDocument;
+    }
+
+    /// Returns the range backing the receiver.
+    Range range ()
+    {
+        return range_;
     }
 
     /// Starts the archiving process. Call this method before archiving any values.
@@ -56,14 +67,20 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
     {
         if (!hasBegunArchiving)
         {
-            doc.header();
-            lastElement = doc.tree().element(Tags.archiveTag)
-                .attribute(Attributes.typeAttribute, archiveType)
-                .attribute(Attributes.versionAttribute, archiveVersion);
-            lastElement = lastElement.element(Tags.dataTag);
+            put(xmlTag);
+            put("\n");
+            put(header);
+            put("\n");
 
+            lastElement = doc.tree.element(Tags.dataTag);
             hasBegunArchiving = true;
         }
+    }
+
+    void done ()
+    {
+        put("\n");
+        put(footer);
     }
 
     /// Returns the data stored in the archive in an untyped form.
@@ -426,6 +443,43 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
         lastElement.element(Tags.nullTag)
         .attribute(Attributes.typeAttribute, toData(type))
         .attribute(Attributes.keyAttribute, toData(key));
+    }
+
+    /**
+     * Archives a range.
+     *
+     * Examples:
+     * ---
+     * auto range = [1, 2, 3].map!(e => e * 2);
+     * auto archive = new XmlArchive!();
+     *
+     * beginArchiveRange(typeof(range.first).string, range.length, "range", 0);
+     *     // archive the individual elements
+     * endArchiveRange();
+     * ---
+     *
+     * Params:
+     *     type = the runtime type of an element of the range
+     *     length = the length of the range. If not available, size_t.max should be used
+     *     key = the key associated with the range
+     *     id = the id associated with the array
+     */
+    void beginArchiveRange (string type, size_t length, string key, Id id)
+    {
+        pushElement();
+
+        lastElement = lastElement.element(Tags.rangeTag)
+        .attribute(Attributes.typeAttribute, toData(type))
+        .attribute(Attributes.keyAttribute, toData(key))
+        .attribute(Attributes.idAttribute, toData(id));
+
+        if (length != size_t.max)
+            lastElement.attribute(Attributes.lengthAttribute, toData(length));
+    }
+
+    void endArchiveRange ()
+    {
+        popElement();
     }
 
     /**
@@ -879,12 +933,22 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
             array.parent.attach(array.node);
     }
 
-    private void addArchivedArray (Id id, doc.Node parent, doc.Node element, string key)
+    /// Flushes the archiver and outputs its data to the internal output range.
+    void flush ()
+    {
+        immutable content = lastElement.pretty().join("\n    ");
+        put("    ");
+        put(content);
+    }
+
+private:
+
+    void addArchivedArray (Id id, doc.Node parent, doc.Node element, string key)
     {
         archivedArrays[id] = Node(parent, element, id, key);
     }
 
-    private Node* getArchivedArray (Id id)
+    Node* getArchivedArray (Id id)
     {
         if (auto array = id in archivedArrays)
             return array;
@@ -894,7 +958,7 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
         return null;
     }
 
-    private Node* getArchivedPointer (Id id)
+    Node* getArchivedPointer (Id id)
     {
         if (auto pointer = id in archivedPointers)
             return pointer;
@@ -904,7 +968,7 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
         return null;
     }
 
-    private doc.Node getElement (Data tag, string key, Data attribute = Attributes.keyAttribute, bool throwOnError = true)
+    doc.Node getElement (Data tag, string key, Data attribute = Attributes.keyAttribute, bool throwOnError = true)
     {
         auto set = lastElement.query()[tag].attribute((doc.Node node) {
             if (node.name == attribute && node.value == key)
@@ -928,7 +992,7 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
         return doc.Node.invalid;
     }
 
-    private Data getValueOfAttribute (Data attribute, doc.Node element = doc.Node.invalid)
+    Data getValueOfAttribute (Data attribute, doc.Node element = doc.Node.invalid)
     {
         if (!element.isValid)
             element = lastElement;
@@ -960,6 +1024,11 @@ final class XmlArchiver (U = char) : ArchiverBase!(U)
     void popElement ()
     {
         lastElement = tempElement;
+    }
+
+    void put (string str)
+    {
+        range_.put(str);
     }
 }
 

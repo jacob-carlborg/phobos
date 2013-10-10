@@ -104,14 +104,14 @@ final class XmlDocument
         private bool isRoot = true;
 
         private static Node opCall (InternalNode node, bool shouldAddToDoc = false, bool isRoot = false)
-           {
+        {
             Node proxy;
-               proxy.node = node;
-                proxy.shouldAddToDoc = shouldAddToDoc;
-                proxy.isRoot = isRoot;
+            proxy.node = node;
+            proxy.shouldAddToDoc = shouldAddToDoc;
+            proxy.isRoot = isRoot;
 
-               return proxy;
-           }
+            return proxy;
+        }
 
         /**
          * Returns an invalid node.
@@ -246,6 +246,16 @@ final class XmlDocument
                 node.node.parent = this.node;
                 this.node ~= node.node;
             }
+        }
+
+        string toString ()
+        {
+            return node.toString();
+        }
+
+        string[] pretty (int indentation = 4)
+        {
+            return node.pretty(indentation);
         }
     }
 

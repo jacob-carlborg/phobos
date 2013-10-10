@@ -62,10 +62,9 @@ mixin template ArchiverMixin ()
     @property ErrorCallback errorCallback (ErrorCallback errorCallback);
 }
 
-mixin template ArchiverBaseMixin ()
+mixin template ArchiverBaseMixin (DataType)
 {
-    /// The typed used to represent the archived data in a typed form.
-    alias immutable(U)[] Data;
+    alias Data = DataType;
 
     private ErrorCallback errorCallback_;
 

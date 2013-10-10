@@ -10,6 +10,7 @@ module std.serialization.archivers.archiver;
 
 import std.array;
 import std.conv;
+import std.serialization.archivers.archivermixin;
 import std.serialization.deserializer;
 import std.serialization.serializationexception;
 import std.serialization.serializer;
@@ -625,6 +626,9 @@ interface Archiver
      *     id = the id associated with the array
      */
     void postProcessArray (Id id);
+
+    /// Flushes the archiver and outputs its data to the internal output range.
+    void flush ();
 }
 
 /**
@@ -635,9 +639,9 @@ interface Archiver
  * Most of the examples below are assumed to be in a sub class to this class and
  * with $(I string) as the data type.
  */
-abstract class ArchiverBase (U) : Archiver
+abstract class ArchiverBase (DataType) : Archiver
 {
-    mixin ArchiverBaseMixin;
+    mixin ArchiverBaseMixin!(DataType);
 
     /**
      * The archive is responsible for archiving primitive types in the format chosen by
@@ -695,142 +699,5 @@ abstract class ArchiverBase (U) : Archiver
     {
         if (errorCallback)
             errorCallback()(new SerializationException(exception));
-    }
-}
-
-mixin template ArchiverMixin ()
-{   
-    /// The type of an ID.
-    alias size_t Id;
-
-    /// The typed used to represent the archived data in an untyped form.
-    alias immutable(void)[] UntypedData;
-
-    /// The type of error callback.
-    alias ErrorCallback = Serializer.ErrorCallback;
-
-    /**
-     * This callback will be called when an unexpected event occurs, i.e. an expected element
-     * is missing in the unarchiving process.
-     *
-     * Examples:
-     * ---
-     * auto archive = new XmlArchive!();
-     * serializer.errorCallback = (SerializationException exception) {
-     *     writeln(exception);
-     *     throw exception;
-     * };
-     * ---
-     *
-     * See_Also: $(LREF ErrorCallback)
-     */
-    @property ErrorCallback errorCallback ();
-
-    /**
-     * This callback will be called when an unexpected event occurs, i.e. an expected element
-     * is missing in the unarchiving process.
-     *
-     * Examples:
-     * ---
-     * auto archive = new XmlArchive!();
-     * serializer.errorCallback = (SerializationException exception) {
-     *     writeln(exception);
-     *     throw exception;
-     * };
-     * ---
-     *
-     * See_Also: $(LREF ErrorCallback)
-     */
-    @property ErrorCallback errorCallback (ErrorCallback errorCallback);
-}
-
-mixin template ArchiverBaseMixin ()
-{
-    /// The typed used to represent the archived data in a typed form.
-    alias immutable(U)[] Data;
-
-    private ErrorCallback errorCallback_;
-
-    /**
-     * This callback will be called when an unexpected event occurs, i.e. an expected element
-     * is missing in the unarchiving process.
-     *
-     * Examples:
-     * ---
-     * auto archive = new XmlArchive!();
-     * serializer.errorCallback = (SerializationException exception) {
-     *     writeln(exception);
-     *     throw exception;
-     * };
-     * ---
-     */
-    @property ErrorCallback errorCallback ()
-    {
-        return errorCallback_;
-    }
-
-    /**
-     * This callback will be called when an unexpected event occurs, i.e. an expected element
-     * is missing in the unarchiving process.
-     *
-     * Examples:
-     * ---
-     * auto archive = new XmlArchive!();
-     * serializer.errorCallback = (SerializationException exception) {
-     *     writeln(exception);
-     *     throw exception;
-     * };
-     * ---
-     */
-    @property ErrorCallback errorCallback (ErrorCallback errorCallback)
-    {
-        return errorCallback_ = errorCallback;
-    }
-
-    /**
-     * Creates a new instance of this class with an error callback
-     *
-     * Params:
-     *     errorCallback = the error callback used for ths instance
-     */
-    protected this (ErrorCallback errorCallback)
-    {
-        this.errorCallback = errorCallback;
-    }
-
-    /**
-     * Converts the given value into the type used for archiving.
-     *
-     * Examples:
-     * ---
-     * auto i = toData(3);
-     * assert(i == "3");
-     * ---
-     *
-     * Params:
-     *     value = the value to convert
-     *
-     * Returns: the converted value
-     *
-     * Throws: SerializationException if the conversion failed
-     * See_Also: $(LREF fromData)
-     * See_Also: $(LREF floatingPointToData)
-     */
-    protected Data toData (T) (T value)
-    {
-        try
-        {
-            static if (isFloatingPoint!(T))
-                return floatingPointToData(value);
-
-            else
-                return to!(Data)(value);
-        }
-
-        catch (ConvException e)
-        {
-            error(e);
-            return Data.init;
-        }
     }
 }
