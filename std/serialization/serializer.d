@@ -16,12 +16,14 @@ import std.algorithm : canFind;
 import std.array;
 import std.conv;
 import std.serialization.archivers.archiver;
+import std.range : isInputRange, hasLength, ElementTypeOfRange = ElementType;
 import std.serialization.attribute;
 import std.serialization.events;
 import std.serialization.registerwrapper;
 import std.serialization.serializable;
 import std.serialization.serializationexception;
 import std.serialization.serializermixin;
+import std.string : format;
 import std.traits;
 
 /**
@@ -462,6 +464,11 @@ struct Serializer (Archiver)
         archive.reset();
     }
 
+    void flush ()
+    {
+        archive.flush();
+    }
+
     /**
      * Serializes the given value.
      *
@@ -486,15 +493,41 @@ struct Serializer (Archiver)
      *
      * See_Also: $(LREF deserialize)
      */
-    Data serialize (T) (T value, string key = null)
+    void serialize (T) (T value, string key = null)
     {
-        if (!hasBegunSerializing)
-            hasBegunSerializing = true;
+        auto shouldFlush = false;
 
-        serializeInternal(value, key);
-        postProcess();
+        if (hasBegunSerializing)
+            serializeInternal(value, key);
 
-        return archive.untypedData;
+        else
+        {
+            shouldFlush = true;
+            archive.beginArchiving();
+
+            static if (isInputRange!(T) && !isArray!(T))
+                serializeRange(value, key);
+
+            else
+                serializeInternal(value, key);
+        }
+
+        if (shouldFlush)
+        {
+            postProcess();
+            flush();
+        }
+    }
+
+    /**
+     * Indicates the serialization is done.
+     *
+     * Call this method to when no more objects are expected to be serialized. This allows
+     * archives that use nested structure to end their content.
+     */
+    void done ()
+    {
+        archive.done();
     }
 
     /**
@@ -528,12 +561,41 @@ struct Serializer (Archiver)
     void serializeBase (T) (T value)
     {
         static if (isObject!(T) && !is(Unqual!(T) == Object))
-                serializeBaseTypes(value);
+            serializeBaseTypes(value);
+    }
+
+    private void serializeRange (U) (U value, string key = null, Id id = Id.max)
+    {
+        alias Unqual!(U) T;
+
+        static if (hasLength!(T))
+            immutable length = value.length;
+
+        else
+            immutable length = size_t.max;
+
+        immutable type = typeName!(ElementTypeOfRange!(T));
+
+        if (!key)
+            key = nextKey();
+
+        if (id == Id.max)
+            id = nextId();
+
+        archive.archiveRange(type, length, key, id, {
+            foreach (e ; value)
+                serializeInternal(e);
+        });
     }
 
     private void serializeInternal (U) (U value, string key = null, Id id = Id.max)
     {
         alias Unqual!(U) T;
+
+        void unsupportedType ()
+        {
+            error(format(`The type "%s" cannot be serialized.`, typeName!(T)));
+        }
 
         if (!key)
             key = nextKey();
@@ -543,7 +605,10 @@ struct Serializer (Archiver)
 
         archive.beginArchiving();
 
-        static if ( is(T == typedef) )
+        static if (isInputRange!(T) && !isArray!(T))
+            unsupportedType();
+
+        else static if ( is(T == typedef) )
             serializeTypedef(value, key, id);
 
         else static if (isObject!(T))
@@ -567,7 +632,7 @@ struct Serializer (Archiver)
         else static if (isPointer!(T))
         {
             static if (isFunctionPointer!(T))
-                goto error;
+                unsupportedType();
 
             else
                 serializePointer(value, key, id);
@@ -577,10 +642,7 @@ struct Serializer (Archiver)
             serializeEnum(value, key, id);
 
         else
-        {
-            error:
-            error(format!(`The type "`, T, `" cannot be serialized.`));
-        }
+            unsupportedType();
     }
 
     private void serializeObject (T) (T value, string key, Id id)
@@ -936,4 +998,11 @@ struct Serializer (Archiver)
             dg();
         triggerEvent!(onSerialized)(value);
     }
+}
+
+private:
+
+string typeName (T) ()
+{
+    return typeid(T).toString();
 }

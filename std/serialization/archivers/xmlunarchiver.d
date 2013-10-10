@@ -20,7 +20,7 @@ import std.traits;
  * This class is a concrete implementation of the Archive interface. This archive
  * uses XML as the final format for the serialized data.
  */
-final class XmlUnarchiver (U = char) : UnarchiverBase!(U)
+final class XmlUnarchiver (U) : UnarchiverBase!(string)
 {
     mixin XmlArchiverMixin;
 

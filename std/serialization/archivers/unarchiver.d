@@ -724,9 +724,9 @@ interface Unarchiver
  * Most of the examples below are assumed to be in a sub class to this class and
  * with $(I string) as the data type.
  */
-abstract class UnarchiverBase (U) : Unarchiver
+abstract class UnarchiverBase (DataType) : Unarchiver
 {
-    mixin ArchiverBaseMixin;
+    mixin ArchiverBaseMixin!(DataType);
 
     /**
      * Converts the given value from the type used for archiving to $(I T).
