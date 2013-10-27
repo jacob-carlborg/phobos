@@ -11,17 +11,116 @@ module std.serialization.archivers.xmlarchivermixin;
 import std.serialization.archivers.archiver;
 import std.string : format;
 
+mixin template ConfigMixin ()
+{
+    /**
+     * Indicates if the archiver should pretty format the data.
+     *
+     * Example:
+     * If set to false the data will be formatted as below:
+     * <foo>bar</foo>
+     *
+     * Example:
+     * If set to true data will be formatted as below:
+     * <foo>
+     *     bar
+     * </foo>
+     *
+     * See_Also: indentation
+     */
+    enum prettyFormat = true;
+
+    /**
+     * The number spaces used for indentation.
+     *
+     * Ignore if prettyFormat is false.
+     *
+     * Example:
+     * If set to 2
+     * ---
+     * <foo>
+     *   bar
+     * </foo>
+     * ---
+     *
+     * Example:
+     * If set to 4
+     * ---
+     * <foo>
+     *     bar
+     * </foo>
+     * ---
+     *
+     * See_Also: prettyFormat
+     * See_Also: indentationString
+     */
+    enum indentation = 4;
+
+    /**
+     * Indicates if a root tag should be included.
+     *
+     * Example:
+     * If set to true:
+     * ---
+     * <archive version="1.0.0" type="std.xml">
+     *     <foo>
+     *         bar
+     *     </foo>
+     * </archive>
+     * ---
+     *
+     * Example:
+     * If set to false:
+     * ---
+     * <foo>
+     *     bar
+     * </foo>
+     * ---
+     */
+    enum rootTag = true;
+
+    /**
+     * Indicates that an XML declaration should be included.
+     *
+     * Example:
+     * If set to true:
+     * ---
+     * <?xml version="1.0" encoding="UTF-8"?>
+     * <foo>
+     *     bar
+     * </foo>
+     * ---
+     *
+     * Example:
+     * If set to false:
+     * ---
+     * <foo>
+     *     bar
+     * </foo>
+     * ---
+     */
+    enum xmlDeclaration = true;
+}
+
+struct Config
+{
+    mixin ConfigMixin;
+}
+
 package:
 
-mixin template XmlArchiverMixin ()
+mixin template XmlArchiverMixin (Config)
 {
     /// The version of the archiver.
     enum version_ = "1.0.0";
 
+    /// The config of the archiver.
+    alias config = Config;
+
 private:
 
     enum archiverType = "std.serialization.archivers.xmlarchiver.XmlArchiver";
-    enum xmlTag = `<?xml version="1.0" encoding="UTF-8"?>`;
+    enum xmlDeclaration = `<?xml version="1.0" encoding="UTF-8"?>`;
     enum header = format(`<archive version="%s" type="%s">`, version_, archiverType);
     enum footer = "</archive>";
 

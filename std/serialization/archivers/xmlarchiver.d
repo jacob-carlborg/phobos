@@ -9,7 +9,7 @@
 module std.serialization.archivers.xmlarchiver;
 
 import std.conv;
-import std.range : ElementType, isInputRange;
+import std.range : ElementType, isInputRange, repeat;
 import std.serialization.archivers.archiver;
 import std.serialization.archivers.xmlarchivermixin;
 import std.serialization.archivers.xmldocument;
@@ -21,12 +21,14 @@ import std.traits;
  * This class is a concrete implementation of the Archive interface. This archive
  * uses XML as the final format for the serialized data.
  */
-final class XmlArchiver (Range) : ArchiverBase!(string)
+final class XmlArchiver (Range, Config = Config) : ArchiverBase!(string)
 {
-    mixin XmlArchiverMixin;
+    mixin XmlArchiverMixin!(Config);
 
     private
     {
+        enum indentationString = ' '.repeat(config.indentation).to!(string);
+
         Data archiveType = "std.xml";
         Data archiveVersion = "1.0.0";
 
@@ -67,20 +69,40 @@ final class XmlArchiver (Range) : ArchiverBase!(string)
     {
         if (!hasBegunArchiving)
         {
-            put(xmlTag);
-            put("\n");
-            put(header);
-            put("\n");
+            static if (config.xmlDeclaration)
+            {
+                put(xmlDeclaration);
 
-            lastElement = doc.tree.element(Tags.dataTag);
+                static if (config.prettyFormat)
+                    put("\n");
+            }
+
+            static if (config.rootTag)
+            {
+                put(header);
+
+                static if (config.prettyFormat)
+                    put("\n");
+
+                lastElement = doc.tree.element(Tags.dataTag);
+            }
+
+            else
+                lastElement = doc.tree;
+
             hasBegunArchiving = true;
         }
     }
 
     void done ()
     {
-        put("\n");
-        put(footer);
+        static if (config.rootTag)
+        {
+            static if (config.prettyFormat)
+                put("\n");
+
+            put(footer);
+        }
     }
 
     /// Returns the data stored in the archive in an untyped form.
@@ -936,9 +958,27 @@ final class XmlArchiver (Range) : ArchiverBase!(string)
     /// Flushes the archiver and outputs its data to the internal output range.
     void flush ()
     {
-        immutable content = lastElement.pretty().join("\n    ");
-        put("    ");
-        put(content);
+        static if (config.prettyFormat)
+        {
+            static if (config.rootTag)
+            {
+                enum prefix = indentationString;
+                enum suffix = '\n' ~ indentationString;
+            }
+
+            else
+            {
+                enum prefix = "";
+                enum suffix = "\n";
+            }
+
+            immutable data = prefix ~ lastElement.pretty(config.indentation).join(suffix);
+        }
+
+        else
+            immutable data = lastElement.toString();
+
+        put(data);
     }
 
 private:
