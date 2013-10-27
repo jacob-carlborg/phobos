@@ -27,6 +27,147 @@ import std.string : format;
 import std.traits;
 
 /**
+ * This interface is used to represent a compile time configuration for the serializer and
+ * archivers.
+ *
+ * This is the default configuration for the serializer. Each archiver also has its default
+ * configuration. An archiver may not support all features specified here, which is noted in
+ * the archiver specific configuration. An archiver is also free to specify additional
+ * configuration options, like formatting of the archived data.
+ *
+ * A user can disable features of the serializer or an archiver but it can never enabled
+ * features of an archiver that aren't supported.
+ *
+ * The configuration is used by creating a new interface, inheriting from $(XREF SerializerConfig)
+ * or an archive specific configuration. Values are "overridden" by creating new enum
+ * declarations for the values of interest to change. The configuration is passed to the
+ * archiver and the serializer will pick it up as well.
+ *
+ * Note that although interfaces are used all configurations are preformed at compile time
+ * and without any runtime overhead.
+ *
+ * Example:
+ * ---
+ * interface NoReferencesConfig : SerializerConfig
+ * {
+ *  enum references = false;
+ * }
+ * ---
+ */
+interface SerializerConfig
+{
+    /**
+     * Supports references.
+     *
+     * If this option is enabled the serializer will keep track of reference and pointer types,
+     * like objects. That means if an object about to be serialized already has been serialized
+     * it will not be serialized again. Instead, a reference will be serialized. Later during the
+     * deserializing phase the original object will be deserialized and the references are
+     * restored to point to the original deserialized object.
+     *
+     * If this option is disabled the serializer will serializer the same reference multiple
+     * times. This will result in multiple copies being created during deserialization.
+     *
+     * Example:
+     * ---
+     * class Bar
+     * {
+     *  int a = 3;
+     * }
+     *
+     * class Foo
+     * {
+     *  Bar b1;
+     *  Bar b2;
+     * }
+     *
+     * auto foo = new Foo;
+     * foo.b1 = new Bar;
+     * foo.b2 = foo.b1;
+     * ---
+     *
+     * See_Also: $(XREF pointers)
+     */
+    enum references = true;
+
+    /**
+     * Supports internal pointers.
+     *
+     * This basically means that the serializer will keep track of pointers to fields in the
+     * objects being serialized. During deserialization these pointers are restored, pointing
+     * to their original fields.
+     *
+     * Note that this is not the same thing as references above. This feature should be used
+     * when pointers to fields in the object graph being serialized are needed.
+     *
+     * If this option is disabled the serializer will serialize the same pointer multiple
+     * times. This will result in multiple copies being created during deserialization.
+     *
+     * Example:
+     * ---
+     * struct Foo
+     * {
+     *  int a = 3;
+     *  int* b;
+     * }
+     *
+     * auto foo = Foo();
+     * foo.b = &foo.b;
+     * ---
+     *
+     * See_Also: $(XREF references)
+     */
+    enum pointers = true;
+
+    /**
+     * Supports array slices.
+     *
+     * If this option is enabled the serializer will properly serialize and later restore
+     * slices of arrays during deserialization.
+     *
+     * If this option is disabled the serializer will serialize a slice as a regular array.
+     * This will result in a copy of the array during deserialization.
+     *
+     * Note that enabling this option could result in decreased (de)serialization performance.
+     *
+     * Example:
+     * ---
+     * class Foo
+     * {
+     *  int[] a;
+     *  int[] b;
+     * }
+     *
+     * auto foo = new Foo;
+     * foo.a = [1, 2, 3, 4];
+     * foo.b = foo.a[1 .. $ - 1];
+     * ---
+     */
+    enum slices = true;
+
+    /**
+     * Supports (de)serialization events.
+     *
+     * When this option enabled any type that has registered events will be triggered.
+     * Disabling this option will disable events globally.
+     *
+     * Example:
+     * ---
+     * class Foo
+     * {
+     *  int a;
+     *
+     *  @onSerializing void serializing ()
+     *  {
+     *      a = 3;
+     *  }
+     * }
+     * ---
+     */
+    enum events = true;
+}
+
+/**
  * This class represents a serializer. It's the main interface to the serialization
  * process and it's this class that actually performs most of the serialization.
  *
@@ -78,6 +219,9 @@ import std.traits;
 struct Serializer (Archiver)
 {
     mixin SerializerMixin;
+
+    /// The config of the serializer.
+    alias config = Archiver.config;
 
     /// The type of error callback.
     alias Archiver.ErrorCallback ErrorCallback;
