@@ -44,7 +44,7 @@ import std.serialization.serializer;
  *
  * See_Also: $(LREF isSerializable)
  */
-interface Serializable
+/++interface Serializable
 {
     /**
      * Called by the given serializer when performing custom serialization.
@@ -67,7 +67,7 @@ interface Serializable
      * See_Also: $(LREF toData)
      */
     void fromData (Serializer serializer, Serializer.Data key);
-}
+}++/
 
 /**
  * Evaluates to $(D_KEYWORD true) if the given type is serializable. A type is considered
@@ -99,9 +99,8 @@ interface Serializable
  */
 template isSerializable (T)
 {
-    enum isSerializable = is(T : Serializable) || (
-        is(typeof(T.toData(Serializer.init, Serializer.Data.init))) &&
-        is(typeof(T.fromData(Serializer.init, Serializer.Data.init))));
+    enum isSerializable = is(typeof(T.toData(Serializer.init, Serializer.Data.init))) &&
+        is(typeof(T.fromData(Serializer.init, Serializer.Data.init)));
 }
 
 /**

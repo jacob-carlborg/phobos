@@ -73,7 +73,7 @@ import std.traits;
  * }
  * ---
  */
-class Serializer
+struct Serializer (Archiver)
 {
     mixin SerializerMixin;
 
@@ -876,7 +876,7 @@ class Serializer
 
     void callSerializer (T) (RegisterBase* baseWrapper, ref T value, string key)
     {
-        auto wrapper = cast(SerializeRegisterWrapper!(T)) *baseWrapper;
+        auto wrapper = cast(SerializeRegisterWrapper!(T, Serializer)) *baseWrapper;
         wrapper(value, this, key);
     }
 

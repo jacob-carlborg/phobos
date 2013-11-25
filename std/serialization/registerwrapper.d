@@ -26,7 +26,7 @@ class RegisterBase { }
  * Params:
  *     T = the type of the class or struct which is serialized
  */
-class SerializeRegisterWrapper (T) : RegisterBase
+class SerializeRegisterWrapper (T, Serializer) : RegisterBase
 {
     private void delegate (T, Serializer, Serializer.Data) dg;
     private bool isDelegate;
