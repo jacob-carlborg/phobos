@@ -202,14 +202,14 @@ interface SerializerConfig
  *
  * void main ()
  * {
- *     auto archive = new XmlArchive!();
+ *     auto archiver = new XmlArchive!();
  *     auto serializer = new Serializer;
  *
  *     auto foo = new Foo;
  *     foo.a = 3;
  *
  *     serializer.serialize(foo);
- *     auto foo2 = serializer.deserialize!(Foo)(archive.untypedData);
+ *     auto foo2 = serializer.deserialize!(Foo)(archiver.untypedData);
  *
  *     writeln(foo2.a); // prints "3"
  *     assert(foo.a == foo2.a);
@@ -248,7 +248,7 @@ struct Serializer (Archiver)
      */
     @property ErrorCallback errorCallback ()
     {
-        return archive.errorCallback;
+        return archiver.errorCallback;
     }
 
     /**
@@ -267,7 +267,7 @@ struct Serializer (Archiver)
      */
     @property ErrorCallback errorCallback (ErrorCallback errorCallback)
     {
-        return archive.errorCallback = errorCallback;
+        return archiver.errorCallback = errorCallback;
     }
 
     private
@@ -289,7 +289,7 @@ struct Serializer (Archiver)
             RegisterBase[string] serializers;
         }
 
-        Archiver archive_;
+        Archiver archiver_;
 
         size_t keyCounter;
         Id idCounter;
@@ -309,7 +309,7 @@ struct Serializer (Archiver)
     }
 
     /**
-     * Creates a new serializer using the given archive.
+     * Creates a new serializer using the given archiver.
      *
      * The archive is the backend of the (de)serialization process, it performs the low
      * level (de)serialization of primitive values and it decides the final format of the
@@ -326,7 +326,7 @@ struct Serializer (Archiver)
      */
     this (Archiver archive)
     {
-        this.archive_ = archive;
+        this.archiver_ = archive;
 
         throwOnErrorCallback = (SerializationException exception) { throw exception; };
         doNothingOnErrorCallback = (SerializationException exception) { /* do nothing */ };
@@ -535,13 +535,13 @@ struct Serializer (Archiver)
     }
 
     /**
-     * Returns the receivers archive.
+     * Returns the receiver's archiver.
      *
      * See_Also: $(XREF4 serialization, archives, archive, Archive)
      */
-    @property Archiver archive ()
+    @property Archiver archiver ()
     {
-        return archive_;
+        return archiver_;
     }
 
     /**
@@ -590,7 +590,7 @@ struct Serializer (Archiver)
     /**
      * Resets the serializer.
      *
-     * All internal data is reset, including the archive. After calling this method the
+     * All internal data is reset, including the archiver. After calling this method the
      * serializer can be used to start a completely new (de)serialization process.
      *
      * See_Also: $(XREF4 serialization, archives, archive, .Archive.reset)
@@ -605,12 +605,12 @@ struct Serializer (Archiver)
         serializedValues = null;
         hasBegunSerializing = false;
 
-        archive.reset();
+        archiver.reset();
     }
 
     void flush ()
     {
-        archive.flush();
+        archiver.flush();
     }
 
     /**
@@ -647,7 +647,7 @@ struct Serializer (Archiver)
         else
         {
             shouldFlush = true;
-            archive.beginArchiving();
+            archiver.beginArchiving();
 
             static if (isInputRange!(T) && !isArray!(T))
                 serializeRange(value, key);
@@ -671,7 +671,7 @@ struct Serializer (Archiver)
      */
     void done ()
     {
-        archive.done();
+        archiver.done();
     }
 
     /**
@@ -726,7 +726,7 @@ struct Serializer (Archiver)
         if (id == Id.max)
             id = nextId();
 
-        archive.archiveRange(type, length, key, id, {
+        archiver.archiveRange(type, length, key, id, {
             foreach (e ; value)
                 serializeInternal(e);
         });
@@ -747,7 +747,7 @@ struct Serializer (Archiver)
         if (id == Id.max)
             id = nextId();
 
-        archive.beginArchiving();
+        archiver.beginArchiving();
 
         static if (isInputRange!(T) && !isArray!(T))
             unsupportedType();
@@ -796,19 +796,19 @@ struct Serializer (Archiver)
         static if (!isNonSerialized!(T)())
         {
             if (!value)
-                return archive.archiveNull(typeName, key);
+                return archiver.archiveNull(typeName, key);
 
             auto reference = getSerializedReference(value);
 
             if (reference != Id.max)
-                return archive.archiveReference(key, reference);
+                return archiver.archiveReference(key, reference);
 
             auto runtimeType = value.classinfo.name;
 
             addSerializedReference(value, id);
 
             triggerEvents(value, {
-                archive.archiveObject(runtimeType, typeName, key, id, {
+                archiver.archiveObject(runtimeType, typeName, key, id, {
                     if (auto serializer = runtimeType in overriddenSerializers)
                         callSerializer(serializer, value, key);
 
@@ -847,7 +847,7 @@ struct Serializer (Archiver)
             string type = typeid(T).toString();
 
             triggerEvents(value, {
-                archive.archiveStruct(type, key, id, {
+                archiver.archiveStruct(type, key, id, {
                     if (auto serializer = type in overriddenSerializers)
                         callSerializer(serializer, value, key);
 
@@ -871,7 +871,7 @@ struct Serializer (Archiver)
     {
         auto array = Array(cast(void*) value.ptr, value.length, ElementTypeOfArray!(T).sizeof);
 
-        archive.archive(value, key, id);
+        archiver.archive(value, key, id);
 
         if (value.length > 0)
             addSerializedArray(array, id);
@@ -881,7 +881,7 @@ struct Serializer (Archiver)
     {
         auto array = Array(value.ptr, value.length, ElementTypeOfArray!(T).sizeof);
 
-        archive.archiveArray(array, arrayToString!(T)(), key, id, {
+        archiver.archiveArray(array, arrayToString!(T)(), key, id, {
             for (size_t i = 0; i < value.length; i++)
             {
                 const e = value[i];
@@ -898,23 +898,23 @@ struct Serializer (Archiver)
         auto reference = getSerializedReference(value);
 
         if (reference != Id.max)
-            return archive.archiveReference(key, reference);
+            return archiver.archiveReference(key, reference);
 
         addSerializedReference(value, id);
 
         string keyType = typeid(KeyType!(T)).toString();
         string valueType = typeid(ValueType!(T)).toString();
 
-        archive.archiveAssociativeArray(keyType, valueType, value.length, key, id, {
+        archiver.archiveAssociativeArray(keyType, valueType, value.length, key, id, {
             size_t i;
 
             foreach(k, v ; value)
             {
-                archive.archiveAssociativeArrayKey(toData(i), {
+                archiver.archiveAssociativeArrayKey(toData(i), {
                     serializeInternal(k, toData(i));
                 });
 
-                archive.archiveAssociativeArrayValue(toData(i), {
+                archiver.archiveAssociativeArrayValue(toData(i), {
                     serializeInternal(v, toData(i));
                 });
 
@@ -926,14 +926,14 @@ struct Serializer (Archiver)
     private void serializePointer (T) (T value, string key, Id id)
     {
         if (!value)
-            return archive.archiveNull(typeid(T).toString(), key);
+            return archiver.archiveNull(typeid(T).toString(), key);
 
         auto reference = getSerializedReference(value);
 
         if (reference != Id.max)
-            return archive.archiveReference(key, reference);
+            return archiver.archiveReference(key, reference);
 
-        archive.archivePointer(key, id, {
+        archiver.archivePointer(key, id, {
             if (auto serializer = key in overriddenSerializers)
                 callSerializer(serializer, value, key);
 
@@ -956,7 +956,7 @@ struct Serializer (Archiver)
                     auto valueMeta = getSerializedValue(value);
 
                     if (valueMeta.isValid)
-                        archive.archiveReference(nextKey(), valueMeta.id);
+                        archiver.archiveReference(nextKey(), valueMeta.id);
 
                     else
                         serializeInternal(*value, nextKey());
@@ -973,17 +973,17 @@ struct Serializer (Archiver)
         auto val = cast(EnumBaseType) value;
         string type = typeid(T).toString();
 
-        archive.archiveEnum(val, type, key, id);
+        archiver.archiveEnum(val, type, key, id);
     }
 
     private void serializePrimitive (T) (T value, string key, Id id)
     {
-        archive.archive(value, key, id);
+        archiver.archive(value, key, id);
     }
 
     private void serializeTypedef (T) (T value, string key, Id id)
     {
-        archive.archiveTypedef(typeid(T).toString(), key, nextId(), {
+        archiver.archiveTypedef(typeid(T).toString(), key, nextId(), {
             serializeInternal!(OriginalType!(T))(value, nextKey());
         });
     }
@@ -1017,7 +1017,7 @@ struct Serializer (Archiver)
                 auto reference = getSerializedReference(v);
 
                 if (reference != Id.max)
-                    archive.archiveReference(field, reference);
+                    archiver.archiveReference(field, reference);
 
                 else
                 {
@@ -1045,7 +1045,7 @@ struct Serializer (Archiver)
 
         static if (!is(Unqual!(Base) == Object))
         {
-            archive.archiveBaseClass(typeid(Base).toString(), nextKey(), nextId());
+            archiver.archiveBaseClass(typeid(Base).toString(), nextKey(), nextId());
             inout Base base = value;
             aggregateSerializeHelper(base);
         }
@@ -1117,7 +1117,7 @@ struct Serializer (Archiver)
                 if (slice.isSliceOf(array) && slice != array)
                 {
                     auto s = Slice(slice.length, (slice.ptr - array.ptr) / slice.elementSize);
-                    archive.archiveSlice(s, sliceKey, arrayKey);
+                    archiver.archiveSlice(s, sliceKey, arrayKey);
                     foundSlice = true;
                     break;
                 }
@@ -1127,7 +1127,7 @@ struct Serializer (Archiver)
             }
 
             if (!foundSlice)
-                archive.postProcessArray(sliceKey);
+                archiver.postProcessArray(sliceKey);
         }
     }
 
