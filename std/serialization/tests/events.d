@@ -15,8 +15,9 @@ import std.serialization.archivers.xmlarchiver;
 import std.serialization.tests.util;
 import std.traits;
 
-Serializer serializer;
-XmlArchive!(char) archive;
+alias Archiver = XmlArchiver!();
+Archiver archive;
+Serializer!(Archiver) serializer;
 
 int b;
 int c;
@@ -51,8 +52,10 @@ Events events;
 
 void beforeEach ()
 {
-    archive = new XmlArchive!(char);
-    serializer = new Serializer(archive);
+    import std.array : appender;
+
+    archive = new Archiver(appender!(string)());
+    serializer = Serializer(archive);
 
     events = new Events;
 

@@ -6,7 +6,7 @@
  */
 module std.serialization.tests.customwithstring;
 
-version (unittest):
+/+version (unittest):
 private:
 
 import std.serialization.serializer;
@@ -81,4 +81,4 @@ void beforeEach ()
 
         assert(i == 5);
     }
-}
+}+/

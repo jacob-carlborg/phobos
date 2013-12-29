@@ -15,8 +15,9 @@ import std.serialization.archivers.xmlarchiver;
 import std.serialization.tests.util;
 import std.traits;
 
-Serializer serializer;
-XmlArchive!(char) archive;
+alias Archiver = XmlArchiver!();
+Archiver archive;
+Serializer!(Archiver) serializer;
 
 @nonSerialized class Bar
 {
@@ -35,8 +36,10 @@ Foo foo;
 
 void beforeEach ()
 {
-    archive = new XmlArchive!(char);
-    serializer = new Serializer(archive);
+    import std.array : appender;
+
+    archive = new Archiver(appender!(string)());
+    serializer = Serializer(archive);
 
     foo = new Foo;
     foo.a = 3;

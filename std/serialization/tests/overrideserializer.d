@@ -6,7 +6,7 @@
  */
 module std.serialization.tests.overrideserializer;
 
-version (unittest):
+/+version (unittest):
 private:
 
 import std.serialization.serializer;
@@ -14,8 +14,9 @@ import std.serialization.archivers.xmlarchiver;
 import std.serialization.tests.util;
 import std.traits;
 
-Serializer serializer;
-XmlArchive!(char) archive;
+alias Archiver = XmlArchiver!();
+Archiver archive;
+Serializer!(Archiver) serializer;
 
 class Base
 {
@@ -118,4 +119,4 @@ void beforeEach ()
 
         Serializer.resetSerializers();
     }
-}
+}+/

@@ -14,8 +14,9 @@ import std.serialization.archivers.xmlarchiver;
 import std.serialization.tests.util;
 import std.traits;
 
-Serializer serializer;
-XmlArchive!(char) archive;
+alias Archiver = XmlArchiver!();
+Archiver archive;
+Serializer!(Archiver) serializer;
 
 class K
 {
@@ -27,8 +28,10 @@ K k;
 
 void beforeEach ()
 {
-    archive = new XmlArchive!(char);
-    serializer = new Serializer(archive);
+    import std.array : appender;
+
+    archive = new Archiver(appender!(string)());
+    serializer = Serializer(archive);
 
     k = new K;
     k.a = [3 : 4, 1 : 2, 39 : 472, 6 : 7];

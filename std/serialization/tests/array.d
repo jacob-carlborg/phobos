@@ -21,17 +21,21 @@ class D
 
 D d;
 
-XmlArchive!(char) archive;
-Serializer serializer;
+alias Archiver = XmlArchiver!();
+Archiver archive;
+Serializer!(Archiver) serializer;
 
 void beforeEach ()
 {
-    archive = new XmlArchive!(char);
-    serializer = new Serializer(archive);
+    import std.array : appender;
+
+    archive = new Archiver(appender!(string)());
+    serializer = Serializer!(Archiver)(archive);
 
     d = new D;
     d.arr = [27, 382, 283, 3820, 32, 832].dup;
     serializer.serialize(d);
+    serializer.done();
 }
 
 @describe("serialize array")

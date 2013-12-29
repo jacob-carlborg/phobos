@@ -8,6 +8,7 @@
  */
 module std.serialization.archivers.xmlarchiver;
 
+import std.array : Appender;
 import std.conv;
 import std.range : ElementType, isInputRange, repeat;
 import std.serialization.archivers.archiver;
@@ -21,7 +22,7 @@ import std.traits;
  * This class is a concrete implementation of the Archive interface. This archive
  * uses XML as the final format for the serialized data.
  */
-final class XmlArchiver (Range, Config = Config) : ArchiverBase!(string)
+final class XmlArchiver (Range = Appender!(string), Config = Config) : ArchiverBase!(string)
 {
     mixin XmlArchiverMixin!(Config);
 
@@ -113,7 +114,7 @@ final class XmlArchiver (Range, Config = Config) : ArchiverBase!(string)
     /// Returns the data stored in the archive in an typed form.
     @property Data data ()
     {
-        return doc.toString();
+        return range.data;
     }
 
     /**

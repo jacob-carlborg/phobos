@@ -46,8 +46,8 @@ bool containsArchive (string source)
 
 bool containsArchiveHeader (string source)
 {
-    return source.contains(`<archive type="std.xml" version="1.0.0">`) ||
-        source.contains(`<archive version="1.0.0" type="std.xml">`);
+    return source.contains(`<archive type="std.serialization.archivers.xmlarchiver.XmlArchiver" version="1.0.0">`) ||
+        source.contains(`<archive version="1.0.0" type="std.serialization.archivers.xmlarchiver.XmlArchiver">`);
 }
 
 bool containsXmlTag (string source, string tag, bool simple = false)

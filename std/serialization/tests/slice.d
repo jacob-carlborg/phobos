@@ -14,8 +14,9 @@ import std.serialization.archivers.xmlarchiver;
 import std.serialization.tests.util;
 import std.traits;
 
-Serializer serializer;
-XmlArchive!(char) archive;
+alias Archiver = XmlArchiver!();
+Archiver archive;
+Serializer!(Archiver) serializer;
 
 class J
 {
@@ -36,8 +37,10 @@ J jDeserialized;
 
 void beforeEach ()
 {
-    archive = new XmlArchive!(char);
-    serializer = new Serializer(archive);
+    import std.array : appender;
+
+    archive = new Archiver(appender!(string)());
+    serializer = Serializer(archive);
 
     j = new J;
     j.firstSource = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].dup;
