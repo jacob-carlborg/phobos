@@ -111,12 +111,6 @@ final class XmlArchiver (Range = Appender!(string), Config = Config) : ArchiverB
         return doc.toString();
     }
 
-    /// Returns the data stored in the archive in an typed form.
-    @property Data data ()
-    {
-        return range.data;
-    }
-
     /**
      * Resets the archive. This resets the archive in a state making it ready to start
      * a new archiving process.
