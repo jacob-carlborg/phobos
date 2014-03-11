@@ -98,10 +98,7 @@ interface Unarchiver
      * Params:
      *     data = the data to unarchive
      */
-    void beginUnarchiving (UntypedData data);
-
-    /// Returns the data stored in the archive in an untyped form.
-    @property UntypedData untypedData ();
+    void beginUnarchiving ();
 
     /**
      * Resets the archive. This resets the archive in a state making it ready to start

@@ -82,9 +82,9 @@ class SerializeRegisterWrapper (T, Serializer) : RegisterBase
  * Params:
  *     T = the type of the class or struct which is deserialized
  */
-class DeserializeRegisterWrapper (T) : RegisterBase
+class DeserializeRegisterWrapper (T, Deserializer) : RegisterBase
 {
-    private void delegate (ref T, Deserializer, Serializer.Data) dg;
+    private void delegate (ref T, Deserializer, Deserializer.Data) dg;
     private bool isDelegate;
 
     /**
@@ -95,7 +95,7 @@ class DeserializeRegisterWrapper (T) : RegisterBase
      * Params:
      *     dg = the delegate to call when performing custom serialization
      */
-    this (void delegate (ref T, Deserializer, Serializer.Data) dg)
+    this (void delegate (ref T, Deserializer, Deserializer.Data) dg)
     {
         isDelegate = true;
         this.dg = dg;
@@ -109,7 +109,7 @@ class DeserializeRegisterWrapper (T) : RegisterBase
      * Params:
      *     dg = the delegate to call when performing custom serialization
      */
-    this (void function (ref T, Deserializer, Serializer.Data) func)
+    this (void function (ref T, Deserializer, Deserializer.Data) func)
     {
         dg.funcptr = func;
     }
@@ -122,7 +122,7 @@ class DeserializeRegisterWrapper (T) : RegisterBase
      *     serializer = the serializer that performs the deserialization
      *     key = the key of the given value
      */
-    void opCall (ref T value, Deserializer serializer, Serializer.Data key)
+    void opCall (ref T value, Deserializer serializer, Deserializer.Data key)
     {
         if (dg && isDelegate)
             dg(value, serializer, key);

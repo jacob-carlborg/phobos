@@ -15,7 +15,6 @@ module std.serialization.deserializer;
 import std.algorithm : canFind;
 import std.array;
 import std.conv;
-import std.serialization.archivers.unarchiver;
 import std.serialization.attribute;
 import std.serialization.events;
 import std.serialization.registerwrapper;
@@ -73,7 +72,7 @@ import std.traits;
  * }
  * ---
  */
-class Deserializer
+class Deserializer (Unarchiver)
 {
     mixin SerializerMixin;
 
@@ -468,6 +467,8 @@ class Deserializer
      *
      * This is the main method used for deserializing data.
      *
+     * This method should also be used when performing custom deserializtion.
+     *
      * Examples:
      * ---
      * auto archive = new XmlArchive!();
@@ -479,9 +480,23 @@ class Deserializer
      * assert(i == 1);
      * ---
      *
+     * Examples:
+     *
+     * Using this method when performing custom deserializtion.
+     * ---
+     * class Foo
+     * {
+     *     int a;
+     *
+     *     void fromData (Deserializer deserializer, Deserializer.Data key)
+     *     {
+     *         a = deserializer.deserialize!(int)("a");
+     *     }
+     * }
+     * ---
+     *
      * Params:
      *        T = the type to deserialize the data into
-     *     data = the serialized untyped data to deserialize
      *     key = the key associate with the value that was used during serialization.
      *              Do not specify a key if no key was used during serialization.
      *
@@ -493,104 +508,18 @@ class Deserializer
      *
      * See_Also: $(LREF serialize)
      */
-    T deserialize (T) (Data data, string key = "")
+    T deserialize (T) (string key = "")
     {
         if (!hasBegunDeserializing)
+        {
             hasBegunDeserializing = true;
+            archive.beginUnarchiving();
+        }
 
         if (key.empty())
             key = nextKey();
 
-        archive.beginUnarchiving(data);
-        auto value = deserializeInternal!(T)(key);
-
-        return value;
-    }
-
-    /**
-     * Deserializes the value with the given associated key.
-     *
-     * This method should only be called when performing custom an deserializing a value
-     * that is part of an class or struct. If this method is called before that actual
-     * deserialization process has begun an SerializationException will be thrown.
-     * Use this method if a key was specified during the serialization process.
-     *
-     * Examples:
-     * ---
-     * class Foo
-     * {
-     *     int a;
-     *
-     *     void fromData (Serializer serializer, Serializer.Data key)
-     *     {
-     *         a = serializer!(int)("a");
-     *     }
-     * }
-     * ---
-     *
-     * Params:
-     *     key = the key associate with the value that was used during serialization.
-     *
-     * Returns: the deserialized value. A different runtime type can be returned
-     *             if the given type is a base class.
-     *
-     * Throws: $(XREF3 serialization, serializationexception, SerializationException)
-     *         if this method is called before
-     *            the actual deserialization process has begun.
-     *
-     * Throws: $(XREF3 serialization, serializationexception, SerializationException)
-     *         if an error occurs
-     *
-     * See_Also: $(LREF deserialize)
-     */
-    T deserialize (T) (string key)
-    {
-        if (!hasBegunDeserializing)
-            error("Cannot deserialize without any data, this method should"
-                "only be called after deserialization has begun.");
-
-        return deserialize!(T)(archive.untypedData, key);
-    }
-
-    /**
-     * Deserializes the value with the given associated key.
-     *
-     * This method should only be called when performing custom an deserializing a value
-     * that is part of an class or struct. If this method is called before that actual
-     * deserialization process has begun an SerializationException will be thrown.
-     * Use this method if no key was specified during the serialization process.
-     *
-     * Examples:
-     * ---
-     * class Foo
-     * {
-     *     int a;
-     *
-     *     void fromData (Serializer serializer, Serializer.Data key)
-     *     {
-     *         a = serializer!(int)();
-     *     }
-     * }
-     * ---
-     *
-     * Params:
-     *     key = the key associate with the value that was used during serialization.
-     *
-     * Returns: the deserialized value. A different runtime type can be returned
-     *             if the given type is a base class.
-     *
-     * Throws: $(XREF3 serialization, serializationexception, SerializationException)
-     *         if this method is called before the actual deserialization process
-     *         has begun.
-     *
-     * Throws: $(XREF3 serialization, serializationexception, SerializationException)
-     *         if an error occurs
-     *
-     * See_Also: $(LREF deserialize)
-     */
-    T deserialize (T) ()
-    {
-        return deserialize!(T)("");
+        return deserializeInternal!(T)(key);
     }
 
     /**
@@ -1131,7 +1060,7 @@ class Deserializer
 
     void callDeserializer (T) (RegisterBase* baseWrapper, ref T value, string key)
     {
-         auto wrapper = cast(DeserializeRegisterWrapper!(T)) *baseWrapper;
+         auto wrapper = cast(DeserializeRegisterWrapper!(T, Deserializer)) *baseWrapper;
          wrapper(value, this, key);
     }
 

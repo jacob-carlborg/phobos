@@ -20,7 +20,7 @@ import std.traits;
  * This class is a concrete implementation of the Archive interface. This archive
  * uses XML as the final format for the serialized data.
  */
-final class XmlUnarchiver (U, Config = Config) : UnarchiverBase!(string)
+final class XmlUnarchiver (Range = string, Config = Config) : UnarchiverBase!(string)
 {
     mixin XmlArchiverMixin!(Config);
 
@@ -28,6 +28,8 @@ final class XmlUnarchiver (U, Config = Config) : UnarchiverBase!(string)
     {
         Data archiveType = "std.xml";
         Data archiveVersion = "1.0.0";
+
+        Range range_;
 
         XmlDocument doc;
         doc.Node lastElement;
@@ -41,27 +43,29 @@ final class XmlUnarchiver (U, Config = Config) : UnarchiverBase!(string)
      * Creates a new instance of this class with the give error callback.
      *
      * Params:
+     *     range = The input range that backs the unarchiver. This is where all data will be
+     *          fetch from.
      *     errorCallback = The callback to be called when an error occurs
      */
-    this (ErrorCallback errorCallback = null)
+    this (Range range, ErrorCallback errorCallback = null)
     {
         super(errorCallback);
+        range_ = range;
         doc = new XmlDocument;
     }
 
-    /**
-     * Begins the unarchiving process. Call this method before unarchiving any values.
-     *
-     * Params:
-     *     untypedData = the data to unarchive
-     */
-    public void beginUnarchiving (UntypedData untypedData)
+    /// Returns the range backing the receiver.
+    Range range ()
     {
-        auto data = cast(Data) untypedData;
+        return range_;
+    }
 
+    /// Begins the unarchiving process. Call this method before unarchiving any values.
+    public void beginUnarchiving ()
+    {
         if (!hasBegunUnarchiving)
         {
-            doc.parse(data);
+            doc.parse(range);
             hasBegunUnarchiving = true;
 
             auto set = doc.query()[Tags.archiveTag][Tags.dataTag];
@@ -80,18 +84,6 @@ final class XmlUnarchiver (U, Config = Config) : UnarchiverBase!(string)
                     error(errorMessage ~ `There were more than one "` ~ to!(string)(Tags.dataTag) ~ `" tag.`, [dataTag]);
             }
         }
-    }
-
-    /// Returns the data stored in the archive in an untyped form.
-    @property UntypedData untypedData ()
-    {
-        return doc.toString();
-    }
-
-    /// Returns the data stored in the archive in an typed form.
-    @property Data data ()
-    {
-        return doc.toString();
     }
 
     /**
