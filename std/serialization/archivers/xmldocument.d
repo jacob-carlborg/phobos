@@ -44,7 +44,7 @@ final class XmlDocument
     /// foreach support for visiting a set of nodes.
     struct VisitorProxy
     {
-        private VisitorType nodes;
+        package VisitorType nodes;
 
         private static VisitorProxy opCall (VisitorType nodes)
         {

@@ -646,6 +646,7 @@ struct Serializer (Archiver)
 
         else
         {
+            hasBegunSerializing = true;
             shouldFlush = true;
             archiver.beginArchiving();
 

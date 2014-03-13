@@ -15,6 +15,7 @@ module std.serialization.deserializer;
 import std.algorithm : canFind;
 import std.array;
 import std.conv;
+import std.range : isInputRange, ElementTypeOfRange = ElementType;
 import std.serialization.attribute;
 import std.serialization.events;
 import std.serialization.registerwrapper;
@@ -462,6 +463,15 @@ class Deserializer (Unarchiver)
         archive.reset();
     }
 
+    template ReturnType (T)
+    {
+        static if (isInputRange!(T) && !isArray!(T))
+            alias ReturnType = ElementTypeOfRange!(T)[];
+
+        else
+            alias ReturnType = T;
+    }
+
     /**
      * Deserializes the given data to value of the given type.
      *
@@ -508,18 +518,38 @@ class Deserializer (Unarchiver)
      *
      * See_Also: $(LREF serialize)
      */
-    T deserialize (T) (string key = "")
+    ReturnType!(T) deserialize (T) (string key = "")
     {
-        if (!hasBegunDeserializing)
-        {
-            hasBegunDeserializing = true;
-            archive.beginUnarchiving();
-        }
-
         if (key.empty())
             key = nextKey();
 
-        return deserializeInternal!(T)(key);
+        static if (isInputRange!(T) && !isArray!(T))
+        {
+            if (hasBegunDeserializing)
+            {
+                error("Can only deserialize ranges at the root");
+                assert(false, "Not reachable");
+            }
+
+            else
+            {
+                hasBegunDeserializing = true;
+                archive.beginUnarchiving();
+
+                return deserializeRange!(T)(key);
+            }
+        }
+
+        else
+        {
+            if (hasBegunDeserializing)
+            {
+                hasBegunDeserializing = true;
+                archive.beginUnarchiving();
+            }
+
+            return deserializeRange!(T)(key);
+        }
     }
 
     /**
@@ -555,6 +585,25 @@ class Deserializer (Unarchiver)
     {
         static if (isObject!(T) && !is(Unqual!(T) == Object))
             deserializeBaseTypes(value);
+    }
+
+    private ReturnType!(U) deserializeRange (U) (string key)
+    {
+        alias E = ElementTypeOfRange!(Unqual!(U));
+        E[] array;
+        auto buffer = appender(array);
+
+        archive.unarchiveRange(key, (length) {
+            buffer.reserve(length);
+
+            while (!archive.currentRangeEmpty)
+            {
+                auto e = deserializeInternal!(E)(nextKey());
+                buffer.put(e);
+            }
+        });
+
+        return buffer.data;
     }
 
     private Unqual!(U) deserializeInternal (U, Key) (Key keyOrId)

@@ -33,6 +33,7 @@ final class XmlUnarchiver (Range = string, Config = Config) : UnarchiverBase!(st
 
         XmlDocument doc;
         doc.Node lastElement;
+        doc.VisitorType currentRange;
 
         bool hasBegunUnarchiving;
 
@@ -528,6 +529,63 @@ final class XmlUnarchiver (Range = string, Config = Config) : UnarchiverBase!(st
 
         if (element.isValid)
             lastElement = element;
+    }
+
+    /**
+     * Unarchives the value associated with the given key as a range.
+     *
+     * Examples:
+     * ---
+     * auto archive = new XmlArchive!();
+     * archive.beginUnarchiving(data);
+     * auto id = archive.unarchiveArray("arr", (size_t length) {
+     *     auto arr = new int[length]; // pre-allocate the array
+     *     // unarchive the individual elements of "arr"
+     * });
+     * ---
+     *
+     * Params:
+     *     key = the key associated with the array
+     *     dg = a callback that performs the unarchiving of the individual elements.
+     *             $(I length) is the length of the archived array
+     *
+     * Returns: the id associated with the array
+     */
+    Id unarchiveRange (string key, void delegate (size_t) dg)
+    {
+        return restore!(lastElement, {
+            auto element = getElement(Tags.rangeTag, key);
+
+            if (!element.isValid)
+                return Id.max;
+
+            lastElement = element;
+            currentRange = lastElement.children.nodes;
+
+            auto len = getValueOfAttribute(Attributes.lengthAttribute);
+            auto length = len ? fromData!(size_t)(len) : 0;
+            auto id = getValueOfAttribute(Attributes.idAttribute);
+
+            if (!id)
+                return Id.max;
+
+            dg(length);
+
+            return toId(id);
+        });
+    }
+
+    /// Returns true if the range being currently has no more elements.
+    bool currentRangeEmpty ()
+    {
+        import std.array;
+
+        auto empty = currentRange.empty;
+
+        if (!empty)
+            currentRange.popFront();
+
+        return empty;
     }
 
     /**
