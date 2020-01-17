@@ -4455,7 +4455,7 @@ version (Windows) @system unittest
 version (Posix) @system unittest
 {
     import std.exception : enforce, collectException;
-    import std.process : executeShell;
+
     collectException(rmdirRecurse(deleteme));
     auto d = deleteme~"/a/b/c/d/e/f/g";
     enforce(collectException(mkdir(d)));
@@ -4469,9 +4469,8 @@ version (Posix) @system unittest
 
     d = deleteme~"/a/b/c/d/e/f/g";
     mkdirRecurse(d);
-    version (Android) string link_cmd = "ln -s ";
-    else string link_cmd = "ln -sf ";
-    executeShell(link_cmd~deleteme~"/a/b/c "~deleteme~"/link");
+    const linkTarget = deleteme ~ "/link";
+    symlink(deleteme ~ "/a/b/c", linkTarget);
     rmdirRecurse(deleteme);
     enforce(!exists(deleteme));
 }

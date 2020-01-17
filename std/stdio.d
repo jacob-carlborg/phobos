@@ -1553,6 +1553,7 @@ Removes the lock over the specified file segment.
     }
 
     version (Posix)
+    static if (__traits(compiles, { import std.process : spawnProcess; }))
     @system unittest
     {
         static import std.file;
