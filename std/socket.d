@@ -1996,7 +1996,7 @@ static if (is(sockaddr_un))
             return _nameLen;
         }
 
-        this(scope const(char)[] path) @trusted pure
+        this(scope const(char)[] path) @trusted //pure
         {
             enforce(path.length <= sun.sun_path.sizeof, new SocketParameterException("Path too long"));
             sun.sun_family = AddressFamily.UNIX;
@@ -2039,14 +2039,23 @@ static if (is(sockaddr_un))
     @safe unittest
     {
         import core.stdc.stdio : remove;
-        import std.file : deleteme;
+
+        static string deleteme()
+        {
+            import std.conv : text;
+            import std.process : thisProcessID;
+            import std.file : tempDir;
+
+            return text(tempDir, thisProcessID);
+        }
 
         immutable ubyte[] data = [1, 2, 3, 4];
         Socket[2] pair;
 
-        auto names = [ deleteme ~ "-unix-socket" ];
+        const basePath = deleteme;
+        auto names = [ basePath ~ "-ux-sock" ];
         version (linux)
-            names ~= "\0" ~ deleteme ~ "-abstract\0unix\0socket";
+            names ~= "\0" ~ basePath ~ "-abstract\0unix\0socket";
         foreach (name; names)
         {
             auto address = new UnixAddress(name);

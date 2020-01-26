@@ -8,6 +8,13 @@ import std.experimental.allocator.building_blocks.null_allocator;
 import std.experimental.allocator.common;
 import std.experimental.allocator.gc_allocator;
 
+version (iOS)
+    version = AppleARM;
+else version (TVOS)
+    version = AppleARM;
+else version (WatchOS)
+    version = AppleARM;
+
 // Turn this on for debugging
 // debug = allocator_list;
 
@@ -823,9 +830,12 @@ version (Posix) @system unittest
     import std.algorithm.comparison : max;
     import std.typecons : Ternary;
 
-    enum pageSize = 4096;
+    version (AppleARM)
+        enum pageSize = 16384;
+    else
+        enum pageSize = 4096;
 
-    static void testrw(void[] b)
+    void testrw(void[] b)
     {
         ubyte* buf = cast(ubyte*) b.ptr;
         for (int i = 0; i < b.length; i += pageSize)

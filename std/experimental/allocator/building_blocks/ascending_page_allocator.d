@@ -92,9 +92,10 @@ private mixin template AscendingPageAllocatorImpl(bool isShared)
             import core.sys.posix.sys.mman : mmap, MAP_ANON, PROT_NONE,
                 MAP_PRIVATE, MAP_FAILED;
             import core.sys.posix.unistd : sysconf, _SC_PAGESIZE;
+            import std.algorithm.comparison : max;
 
             pageSize = cast(size_t) sysconf(_SC_PAGESIZE);
-            numPages = n.roundUpToMultipleOf(cast(uint) pageSize) / pageSize;
+            numPages = max(2, n.roundUpToMultipleOf(cast(uint) pageSize) / pageSize);
             data = cast(typeof(data)) mmap(null, pageSize * numPages,
                 PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
             if (data == MAP_FAILED)

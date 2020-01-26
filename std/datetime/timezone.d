@@ -32,6 +32,15 @@ import std.datetime.systime : Clock, stdTimeToUnixTime, SysTime;
 import std.range.primitives : back, empty, front, isOutputRange, popFront;
 import std.traits : isIntegral, isSomeString, Unqual;
 
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
 version (Windows)
 {
     import core.stdc.time : time_t;
@@ -325,7 +334,7 @@ public:
             else version (NetBSD)        enum utcZone = "UTC";
             else version (DragonFlyBSD)  enum utcZone = "UTC";
             else version (linux)         enum utcZone = "UTC";
-            else version (OSX)           enum utcZone = "UTC";
+            else version (Darwin)        enum utcZone = "UTC";
             else version (Solaris)       enum utcZone = "UTC";
             else static assert(0, "The location of the UTC timezone file on this Posix platform must be set.");
 

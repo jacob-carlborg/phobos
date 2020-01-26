@@ -114,6 +114,15 @@ module std.zip;
 
 import std.exception : enforce;
 
+// Non-Android/Apple ARM POSIX-only, because we can't rely on the unzip
+// command being available on Android, Apple ARM or Windows
+version (Android) {}
+else version (iOS) {}
+else version (TVOS) {}
+else version (WatchOS) {}
+else version (Posix)
+    version = HasUnzip;
+
 //debug=print;
 
 /// Thrown on error.
@@ -1700,14 +1709,12 @@ the quick brown fox jumps over the lazy dog\r
     assert(za.directory.length == 0);
 }
 
-// Non-Android POSIX-only, because we can't rely on the unzip command being
-// available on Android or Windows
-version (Android) {} else
-version (Posix) @system unittest
+version (HasUnzip)
+@system unittest
 {
-    import std.datetime, std.file, std.format, std.path, std.process, std.stdio;
+    import std.datetime, std.file, std.path, std.process, std.stdio;
 
-    if (executeShell("unzip").status != 0)
+    if (execute("unzip").status != 0)
     {
         writeln("Can't run unzip, skipping unzip test");
         return;
@@ -1727,7 +1734,7 @@ version (Posix) @system unittest
     string zipFile = buildPath(deleteme, "foo.zip");
     std.file.write(zipFile, cast(byte[]) data2);
 
-    auto result = executeShell(format("unzip -l %s", zipFile));
+    auto result = execute(["unzip", "-l", zipFile]);
     scope(failure) writeln(result.output);
     assert(result.status == 0);
 }

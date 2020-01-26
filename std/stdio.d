@@ -75,6 +75,21 @@ version (OSX)
     version = GENERIC_IO;
     version = HAS_GETDELIM;
 }
+else version (iOS)
+{
+    version = GENERIC_IO;
+    version = HAS_GETDELIM;
+}
+else version (TVOS)
+{
+    version = GENERIC_IO;
+    version = HAS_GETDELIM;
+}
+else version (WatchOS)
+{
+    version = GENERIC_IO;
+    version = HAS_GETDELIM;
+}
 else version (FreeBSD)
 {
     version = GENERIC_IO;
@@ -1532,6 +1547,7 @@ Removes the lock over the specified file segment.
     }
 
     version (Posix)
+    static if (__traits(compiles, { import std.process : spawnProcess; }))
     @system unittest
     {
         static import std.file;
@@ -1545,6 +1561,7 @@ Removes the lock over the specified file segment.
             import core.stdc.stdlib : exit;
             import core.sys.posix.sys.wait : waitpid;
             import core.sys.posix.unistd : fork;
+            import core.stdc.errno;
             int child, status;
             if ((child = fork()) == 0)
             {
@@ -1553,7 +1570,9 @@ Removes the lock over the specified file segment.
             }
             else
             {
-                assert(waitpid(child, &status, 0) != -1);
+                const result = waitpid(child, &status, 0);
+                printf("result=%d errno=%d\n", result, errno);
+                assert(result != -1);
                 assert(status == 0, "Fork crashed");
             }
         }
